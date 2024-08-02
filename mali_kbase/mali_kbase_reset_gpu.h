@@ -144,12 +144,23 @@ void kbase_reset_gpu_assert_prevented(struct kbase_device *kbdev);
 void kbase_reset_gpu_assert_failed_or_prevented(struct kbase_device *kbdev);
 
 /**
+ * kbase_reset_gpu_failed - Return whether a previous GPU reset failed.
+ *
+ * @kbdev: Device pointer
+ *
+ */
+bool kbase_reset_gpu_failed(struct kbase_device *kbdev);
+
+/**
  * RESET_FLAGS_NONE - Flags for kbase_prepare_to_reset_gpu
  */
 #define RESET_FLAGS_NONE (0U)
 
 /* This reset should be treated as an unrecoverable error by HW counter logic */
 #define RESET_FLAGS_HWC_UNRECOVERABLE_ERROR ((unsigned int)(1 << 0))
+
+/* pixel: Powercycle the GPU instead of attempting a soft/hard reset (only used on CSF hw). */
+#define RESET_FLAGS_FORCE_PM_HW_RESET ((unsigned int)(1 << 1))
 
 /**
  * kbase_prepare_to_reset_gpu_locked - Prepare for resetting the GPU.
@@ -235,6 +246,18 @@ int kbase_reset_gpu_silent(struct kbase_device *kbdev);
  * Return: True if the GPU is in the process of being reset.
  */
 bool kbase_reset_gpu_is_active(struct kbase_device *kbdev);
+
+/**
+ * kbase_reset_gpu_not_pending - Reports if the GPU reset isn't pending
+ *
+ * @kbdev: Device pointer
+ *
+ * Note that unless appropriate locks are held when using this function, the
+ * state could change immediately afterwards.
+ *
+ * Return: True if the GPU reset isn't pending.
+ */
+bool kbase_reset_gpu_is_not_pending(struct kbase_device *kbdev);
 
 /**
  * kbase_reset_gpu_wait - Wait for a GPU reset to complete
