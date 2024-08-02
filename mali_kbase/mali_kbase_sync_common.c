@@ -30,7 +30,11 @@
 #include "mali_kbase_sync.h"
 
 #if !MALI_USE_CSF
+<<<<<<< HEAD
 void kbase_sync_fence_wait_worker(struct kthread_work *data)
+=======
+void kbase_sync_fence_wait_worker(struct work_struct *data)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_jd_atom *katom;
 

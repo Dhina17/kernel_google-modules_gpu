@@ -21,7 +21,7 @@
 
 #include <mali_kbase.h>
 #include <mali_kbase_ctx_sched.h>
-#include <mali_kbase_hwcnt_context.h>
+#include <hwcnt/mali_kbase_hwcnt_context.h>
 #include <device/mali_kbase_device.h>
 #include <backend/gpu/mali_kbase_irq_internal.h>
 #include <backend/gpu/mali_kbase_pm_internal.h>

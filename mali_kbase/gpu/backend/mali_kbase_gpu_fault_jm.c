@@ -170,7 +170,7 @@ const char *kbase_gpu_exception_name(u32 const exception_code)
 	default:
 		e = "UNKNOWN";
 		break;
-	};
+	}
 
 	return e;
 }

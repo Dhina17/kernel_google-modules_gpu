@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
 /*
  *
+<<<<<<< HEAD
  * (C) COPYRIGHT 2010-2021 ARM Limited. All rights reserved.
+=======
+ * (C) COPYRIGHT 2010-2022 ARM Limited. All rights reserved.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  *
  * This program is free software and is provided to you under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -27,7 +31,11 @@
 #include <gpu/mali_kbase_gpu_regmap.h>
 #include <mali_kbase_vinstr.h>
 #include <mali_kbase_kinstr_prfcnt.h>
+<<<<<<< HEAD
 #include <mali_kbase_hwcnt_context.h>
+=======
+#include <hwcnt/mali_kbase_hwcnt_context.h>
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #include <mali_kbase_pm.h>
 #include <backend/gpu/mali_kbase_pm_internal.h>
@@ -311,6 +319,7 @@ void kbase_pm_resume(struct kbase_device *kbdev)
 	kbase_pm_driver_resume(kbdev, false);
 #endif /* CONFIG_MALI_ARBITER_SUPPORT */
 }
+<<<<<<< HEAD
 
 /**
  * kbase_pm_apc_power_off_worker - Power off worker running on mali_apc_thread
@@ -489,3 +498,5 @@ void kbase_pm_apc_term(struct kbase_device *kbdev)
 	hrtimer_cancel(&kbdev->apc.timer);
 	kbase_destroy_kworker_stack(&kbdev->apc.worker);
 }
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78

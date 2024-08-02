@@ -377,7 +377,11 @@ struct kbase_queue {
 	int doorbell_nr;
 	unsigned long db_file_offset;
 	struct list_head link;
+#if (KERNEL_VERSION(4, 11, 0) > LINUX_VERSION_CODE)
 	atomic_t refcount;
+#else
+	refcount_t refcount;
+#endif
 	struct kbase_queue_group *group;
 	struct kbase_va_region *queue_reg;
 	struct work_struct oom_event_work;
@@ -626,8 +630,6 @@ struct kbase_csf_heap_context_allocator {
  * @ctx_alloc:   Allocator for heap context structures.
  * @nr_of_heaps: Total number of tiler heaps that were added during the
  *               life time of the context.
- * @est_count_pages: Estimated potentially freeable pages from all the heaps
- *                   on the @list.
  *
  * This contains all of the CSF state relating to chunked tiler heaps for one
  * @kbase_context. It is not the same as a heap context structure allocated by
@@ -638,39 +640,6 @@ struct kbase_csf_tiler_heap_context {
 	struct list_head list;
 	struct kbase_csf_heap_context_allocator ctx_alloc;
 	u64 nr_of_heaps;
-	atomic_t est_count_pages;
-};
-
-#define CSF_CTX_RECLAIM_CANDI_FLAG (1ul << 0)
-#define CSF_CTX_RECLAIM_SCAN_FLAG (1ul << 1)
-/**
- * struct kbase_kctx_heap_info - Object representing the data section of a kctx
- *                               for tiler heap reclaim manger
- * @mgr_link:         Link for hooking up to the heap reclaim manger's kctx lists
- * @attach_jiffies:   jiffies when the kctx is attached to the reclaim manager.
- * @nr_scan_pages:    Number of a better estimated freeable pages from the kctx
- *                    after all its CSGs are off-slots and have been properly
- *                    gone through the freeable pages count process. This field
- *                    is updated when the kctx is moved to the reclaim manager's
- *                    pending scan (freeing) action list, after the counting.
- * @nr_est_pages:     Estimated number of pages of the kctx when all its CSGs are
- *                    off-slot. This is a nominal value used for estimating an
- *                    available page counts from the kctx. The kctx is on the
- *                    reclaim manager's candidate list, waiting for count.
- * @flags:            reflecting the kctx's internal state in relation to the
- *                    scheduler's heap reclaim manager.
- * @on_slot_grps:     Number of on-slot groups from this kctx. In principle, if a
- *                    kctx has groups on-slot, the scheduler will detach it from
- *                    the tiler heap reclaim manager, i.e. no tiler heap memory
- *                    reclaiming operations on the kctx.
- */
-struct kbase_kctx_heap_info {
-	struct list_head mgr_link;
-	unsigned long attach_jiffies;
-	u32 nr_scan_pages;
-	u32 nr_est_pages;
-	u16 flags;
-	u8 on_slot_grps;
 };
 
 /**
@@ -694,10 +663,6 @@ struct kbase_kctx_heap_info {
  *                      streams bound to groups of @idle_wait_groups list.
  * @ngrp_to_schedule:	Number of groups added for the context to the
  *                      'groups_to_schedule' list of scheduler instance.
- * @heap_info:          Heap reclaim information data of the kctx. As the
- *                      reclaim action needs to be coordinated with the scheduler
- *                      operations, the data is placed inside the scheduler's
- *                      context object for this linkage.
  */
 struct kbase_csf_scheduler_context {
 	struct list_head runnable_groups[KBASE_QUEUE_GROUP_PRIORITY_COUNT];
@@ -707,7 +672,6 @@ struct kbase_csf_scheduler_context {
 	struct kthread_worker sync_update_worker;
 	struct kthread_work sync_update_work;
 	u32 ngrp_to_schedule;
-	struct kbase_kctx_heap_info heap_info;
 };
 
 /**
@@ -853,25 +817,6 @@ struct kbase_csf_csg_slot {
 };
 
 /**
- * struct kbase_csf_sched_heap_reclaim_mgr - Object for managing tiler heap reclaim
- *                                           kctx lists inside the CSF device's scheduler.
- *
- * @candidate_ctxs:  List of kctxs that have all their CSGs off-slots. Candidates
- *                   are ready for reclaim count examinations.
- * @scan_list_ctxs:  List counted kctxs, ready for reclaim scan operations.
- * @est_cand_pages:  Estimated pages based on chunks that could be free-able from the
- *                   candidate list. For each addition of an acandidate, the number is
- *                   increased with an estimate, and decreased vice versa.
- * @mgr_scan_pages:  Number of pagess free-able in the scan list, device wide.
- */
-struct kbase_csf_sched_heap_reclaim_mgr {
-	struct list_head candidate_ctxs;
-	struct list_head scan_list_ctxs;
-	atomic_t est_cand_pages;
-	atomic_t mgr_scan_pages;
-};
-
-/**
  * struct kbase_csf_scheduler - Object representing the scheduler used for
  *                              CSF for an instance of GPU platform device.
  * @lock:                  Lock to serialize the scheduler operations and
@@ -1012,7 +957,6 @@ struct kbase_csf_sched_heap_reclaim_mgr {
  *                             policy where the power managment of shader cores
  *                             needs to be done by the Host.
  * @protm_enter_time:       GPU protected mode enter time.
- * @reclaim_mgr:            CSGs tiler heap manager object.
  */
 struct kbase_csf_scheduler {
 	struct mutex lock;
@@ -1060,7 +1004,6 @@ struct kbase_csf_scheduler {
 #endif
 	bool gpu_idle_fw_timer_enabled;
 	ktime_t protm_enter_time;
-	struct kbase_csf_sched_heap_reclaim_mgr reclaim_mgr;
 };
 
 /*
@@ -1449,7 +1392,6 @@ struct kbase_csf_firmware_log {
  *                          HW counters.
  * @fw:                     Copy of the loaded MCU firmware image.
  * @fw_log:                 Contain members required for handling firmware log.
- * @tiler_heap_reclaim:     Tiler heap reclaim shrinker object.
  */
 struct kbase_csf_device {
 	struct kbase_mmu_table mcu_mmu;
@@ -1493,7 +1435,6 @@ struct kbase_csf_device {
 	struct kbase_csf_hwcnt hwcnt;
 	struct kbase_csf_mcu_fw fw;
 	struct kbase_csf_firmware_log fw_log;
-	struct shrinker tiler_heap_reclaim;
 };
 
 /**

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
 /*
  *
+<<<<<<< HEAD
  * (C) COPYRIGHT 2019-2023 ARM Limited. All rights reserved.
+=======
+ * (C) COPYRIGHT 2019-2022 ARM Limited. All rights reserved.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  *
  * This program is free software and is provided to you under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -30,6 +34,7 @@
 #include <linux/version_compat_defs.h>
 #include <linux/anon_inodes.h>
 
+<<<<<<< HEAD
 /* Explicitly include epoll header for old kernels. Not required from 4.16. */
 #if KERNEL_VERSION(4, 16, 0) > LINUX_VERSION_CODE
 #include <uapi/linux/eventpoll.h>
@@ -88,6 +93,8 @@ static const struct kernel_param_ops kbase_global_unprivileged_profiling_ops = {
 module_param_cb(kbase_unprivileged_global_profiling, &kbase_global_unprivileged_profiling_ops,
 		&kbase_unprivileged_global_profiling, 0600);
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /* The timeline stream file operations functions. */
 static ssize_t kbasep_timeline_io_read(struct file *filp, char __user *buffer,
 				       size_t size, loff_t *f_pos);
@@ -96,6 +103,7 @@ static int kbasep_timeline_io_release(struct inode *inode, struct file *filp);
 static int kbasep_timeline_io_fsync(struct file *filp, loff_t start, loff_t end,
 				    int datasync);
 
+<<<<<<< HEAD
 static bool timeline_is_permitted(void)
 {
 #if KERNEL_VERSION(5, 8, 0) <= LINUX_VERSION_CODE
@@ -105,6 +113,8 @@ static bool timeline_is_permitted(void)
 #endif
 }
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /**
  * kbasep_timeline_io_packet_pending - check timeline streams for pending
  *                                     packets
@@ -388,9 +398,12 @@ int kbase_timeline_io_acquire(struct kbase_device *kbdev, u32 flags)
 	};
 	int err;
 
+<<<<<<< HEAD
 	if (!timeline_is_permitted())
 		return -EPERM;
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	if (WARN_ON(!kbdev) || (flags & ~BASE_TLSTREAM_FLAGS_MASK))
 		return -EINVAL;
 
@@ -434,7 +447,11 @@ void kbase_timeline_io_debugfs_init(struct kbase_device *const kbdev)
 	if (WARN_ON(!kbdev) || WARN_ON(IS_ERR_OR_NULL(kbdev->mali_debugfs_directory)))
 		return;
 
+<<<<<<< HEAD
 	file = debugfs_create_file("tlstream", 0400, kbdev->mali_debugfs_directory, kbdev,
+=======
+	file = debugfs_create_file("tlstream", 0444, kbdev->mali_debugfs_directory, kbdev,
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 				   &kbasep_tlstream_debugfs_fops);
 
 	if (IS_ERR_OR_NULL(file))

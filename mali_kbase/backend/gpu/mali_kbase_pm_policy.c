@@ -348,7 +348,10 @@ void kbase_pm_set_policy(struct kbase_device *kbdev,
 	spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
 
 	kbdev->pm.backend.policy_change_clamp_state_to_off = sched_suspend;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	kbase_pm_update_state(kbdev);
 	spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
 

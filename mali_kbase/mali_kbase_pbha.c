@@ -209,6 +209,7 @@ void kbase_pbha_write_settings(struct kbase_device *kbdev)
 	}
 }
 
+<<<<<<< HEAD
 int kbase_pbha_read_dtb(struct kbase_device *kbdev)
 {
 	u32 dtb_data[SYSC_ALLOC_COUNT * sizeof(u32) * DTB_SET_SIZE];
@@ -223,6 +224,15 @@ int kbase_pbha_read_dtb(struct kbase_device *kbdev)
 	if (!pbha_node)
 		return 0;
 
+=======
+static int kbase_pbha_read_int_id_override_property(struct kbase_device *kbdev,
+						    const struct device_node *pbha_node)
+{
+	u32 dtb_data[SYSC_ALLOC_COUNT * sizeof(u32) * DTB_SET_SIZE];
+	int sz, i;
+	bool valid = true;
+
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	sz = of_property_count_elems_of_size(pbha_node, "int_id_override",
 					     sizeof(u32));
 	if (sz <= 0 || (sz % DTB_SET_SIZE != 0)) {
@@ -256,3 +266,25 @@ int kbase_pbha_read_dtb(struct kbase_device *kbdev)
 	}
 	return 0;
 }
+<<<<<<< HEAD
+=======
+
+
+int kbase_pbha_read_dtb(struct kbase_device *kbdev)
+{
+	const struct device_node *pbha_node;
+	int err;
+
+	if (!kbasep_pbha_supported(kbdev))
+		return 0;
+
+	pbha_node = of_get_child_by_name(kbdev->dev->of_node, "pbha");
+	if (!pbha_node)
+		return 0;
+
+	err = kbase_pbha_read_int_id_override_property(kbdev, pbha_node);
+
+
+	return err;
+}
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78

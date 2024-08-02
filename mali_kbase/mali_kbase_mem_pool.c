@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
 /*
  *
+<<<<<<< HEAD
  * (C) COPYRIGHT 2015-2021 ARM Limited. All rights reserved.
+=======
+ * (C) COPYRIGHT 2015-2022 ARM Limited. All rights reserved.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  *
  * This program is free software and is provided to you under the terms of the
  * GNU General Public License version 2 as published by the Free Software
@@ -38,6 +42,7 @@
 #define NOT_DIRTY false
 #define NOT_RECLAIMED false
 
+<<<<<<< HEAD
 static bool mali_kbase_mem_pool_order_pages_enabled = false;
 static void kbase_mem_pool_ordered_add_locked(struct kbase_mem_pool *pool,
 		struct page *p);
@@ -70,6 +75,8 @@ static void kbase_mem_pool_ordered_add_array_spill_locked(
 		struct tagged_addr *pages, struct list_head *spillover_list,
 		bool zero, bool sync);
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 static size_t kbase_mem_pool_capacity(struct kbase_mem_pool *pool)
 {
 	ssize_t max_size = kbase_mem_pool_max_size(pool);
@@ -91,11 +98,14 @@ static bool kbase_mem_pool_is_empty(struct kbase_mem_pool *pool)
 static void kbase_mem_pool_add_locked(struct kbase_mem_pool *pool,
 		struct page *p)
 {
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_add_locked(pool, p);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	lockdep_assert_held(&pool->pool_lock);
 
 	list_add(&p->lru, &pool->page_list);
@@ -182,11 +192,14 @@ static void kbase_mem_pool_zero_page(struct kbase_mem_pool *pool,
 static void kbase_mem_pool_spill(struct kbase_mem_pool *next_pool,
 		struct page *p)
 {
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_spill(next_pool, p);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/* Zero page before spilling */
 	kbase_mem_pool_zero_page(next_pool, p);
 
@@ -365,6 +378,12 @@ static unsigned long kbase_mem_pool_reclaim_count_objects(struct shrinker *s,
 	kbase_mem_pool_lock(pool);
 	if (pool->dont_reclaim && !pool->dying) {
 		kbase_mem_pool_unlock(pool);
+<<<<<<< HEAD
+=======
+		/* Tell shrinker to skip reclaim
+		 * even though freeable pages are available
+		 */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		return 0;
 	}
 	pool_size = kbase_mem_pool_size(pool);
@@ -384,7 +403,14 @@ static unsigned long kbase_mem_pool_reclaim_scan_objects(struct shrinker *s,
 	kbase_mem_pool_lock(pool);
 	if (pool->dont_reclaim && !pool->dying) {
 		kbase_mem_pool_unlock(pool);
+<<<<<<< HEAD
 		return 0;
+=======
+		/* Tell shrinker that reclaim can't be made and
+		 * do not attempt again for this reclaim context.
+		 */
+		return SHRINK_STOP;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	pool_dbg(pool, "reclaim scan %ld:\n", sc->nr_to_scan);
@@ -478,6 +504,7 @@ void kbase_mem_pool_term(struct kbase_mem_pool *pool)
 
 	kbase_mem_pool_unlock(pool);
 
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		if (next_pool && (!list_empty(&spill_list) ||
 				!list_empty(&free_list))) {
@@ -499,6 +526,16 @@ void kbase_mem_pool_term(struct kbase_mem_pool *pool)
 			pool_dbg(pool, "terminate() spilled %zu pages\n",
 					nr_to_spill);
 		}
+=======
+	if (next_pool && nr_to_spill) {
+		list_for_each_entry(p, &spill_list, lru)
+			kbase_mem_pool_zero_page(pool, p);
+
+		/* Add new page list to next_pool */
+		kbase_mem_pool_add_list(next_pool, &spill_list, nr_to_spill);
+
+		pool_dbg(pool, "terminate() spilled %zu pages\n", nr_to_spill);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	list_for_each_entry_safe(p, tmp, &free_list, lru) {
@@ -546,11 +583,14 @@ void kbase_mem_pool_free(struct kbase_mem_pool *pool, struct page *p,
 {
 	struct kbase_mem_pool *next_pool = pool->next_pool;
 
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_free(pool, p, dirty);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	pool_dbg(pool, "free()\n");
 
 	if (!kbase_mem_pool_is_full(pool)) {
@@ -571,11 +611,14 @@ void kbase_mem_pool_free(struct kbase_mem_pool *pool, struct page *p,
 void kbase_mem_pool_free_locked(struct kbase_mem_pool *pool, struct page *p,
 		bool dirty)
 {
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_free_locked(pool, p, dirty);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	pool_dbg(pool, "free_locked()\n");
 
 	lockdep_assert_held(&pool->pool_lock);
@@ -811,12 +854,15 @@ void kbase_mem_pool_free_pages(struct kbase_mem_pool *pool, size_t nr_pages,
 	LIST_HEAD(to_pool_list);
 	size_t i = 0;
 
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_free_pages(pool, nr_pages, pages, dirty,
 				reclaimed);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	pool_dbg(pool, "free_pages(%zu):\n", nr_pages);
 
 	if (!reclaimed) {
@@ -868,12 +914,15 @@ void kbase_mem_pool_free_pages_locked(struct kbase_mem_pool *pool,
 	LIST_HEAD(to_pool_list);
 	size_t i = 0;
 
+<<<<<<< HEAD
 	if (mali_kbase_mem_pool_order_pages_enabled) {
 		kbase_mem_pool_ordered_free_pages_locked(pool, nr_pages, pages,
 				dirty, reclaimed);
 		return;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	lockdep_assert_held(&pool->pool_lock);
 
 	pool_dbg(pool, "free_pages_locked(%zu):\n", nr_pages);
@@ -907,6 +956,7 @@ void kbase_mem_pool_free_pages_locked(struct kbase_mem_pool *pool,
 
 	pool_dbg(pool, "free_pages_locked(%zu) done\n", nr_pages);
 }
+<<<<<<< HEAD
 
 static void kbase_mem_pool_ordered_add_locked(struct kbase_mem_pool *pool,
 		struct page *p)
@@ -1205,3 +1255,5 @@ static void kbase_mem_pool_ordered_add_array_spill_locked(
 	pool_dbg(pool, "add_array(%zu) added %zu pages\n",
 			nr_pages, nr_to_pool);
 }
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78

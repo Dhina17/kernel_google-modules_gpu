@@ -254,6 +254,7 @@ void kbase_pm_driver_resume(struct kbase_device *kbdev,	bool arb_gpu_start);
 void kbase_pm_handle_gpu_lost(struct kbase_device *kbdev);
 #endif /* CONFIG_MALI_ARBITER_SUPPORT */
 
+<<<<<<< HEAD
 /**
  * kbase_pm_apc_init - Initialize Async Power Control (APC)
  * @kbdev: The kbase device structure for the device (must be a valid pointer)
@@ -301,4 +302,6 @@ void kbase_pm_apc_request(struct kbase_device *kbdev, u32 dur_usec);
  */
 void kbase_gpu_timeout_debug_message(struct kbase_device *kbdev);
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #endif /* _KBASE_PM_H_ */

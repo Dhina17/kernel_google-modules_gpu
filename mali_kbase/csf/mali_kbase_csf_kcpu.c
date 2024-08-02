@@ -2185,9 +2185,11 @@ int kbase_csf_kcpu_queue_enqueue(struct kbase_context *kctx,
 
 	/* The offset to the first command that is being processed or yet to
 	 * be processed is of u8 type, so the number of commands inside the
-	 * queue cannot be more than 256.
+	 * queue cannot be more than 256. The current implementation expects
+	 * exactly 256, any other size will require the addition of wrapping
+	 * logic.
 	 */
-	BUILD_BUG_ON(KBASEP_KCPU_QUEUE_SIZE > 256);
+	BUILD_BUG_ON(KBASEP_KCPU_QUEUE_SIZE != 256);
 
 	/* Whilst the backend interface allows enqueueing multiple commands in
 	 * a single operation, the Base interface does not expose any mechanism

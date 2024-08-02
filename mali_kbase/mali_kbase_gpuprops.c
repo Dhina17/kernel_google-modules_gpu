@@ -311,9 +311,13 @@ static void kbase_gpuprops_calculate_props(
 	struct base_gpu_props * const gpu_props, struct kbase_device *kbdev)
 {
 	int i;
+<<<<<<< HEAD
 #if !MALI_USE_CSF
 	u32 gpu_id;
 #endif
+=======
+	u32 gpu_id;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	/* Populate the base_gpu_props structure */
 	kbase_gpuprops_update_core_props_gpu_id(gpu_props);
@@ -363,7 +367,17 @@ static void kbase_gpuprops_calculate_props(
 		gpu_props->thread_props.tls_alloc =
 				gpu_props->raw_props.thread_tls_alloc;
 
+<<<<<<< HEAD
 #if MALI_USE_CSF
+=======
+	/* MIDHARC-2364 was intended for tULx.
+	 * Workaround for the incorrectly applied THREAD_FEATURES to tDUx.
+	 */
+	gpu_id = kbdev->gpu_props.props.raw_props.gpu_id;
+
+#if MALI_USE_CSF
+	CSTD_UNUSED(gpu_id);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	gpu_props->thread_props.max_registers =
 		KBASE_UBFX32(gpu_props->raw_props.thread_features,
 			     0U, 22);
@@ -375,10 +389,13 @@ static void kbase_gpuprops_calculate_props(
 			     24U, 8);
 	gpu_props->thread_props.max_thread_group_split = 0;
 #else
+<<<<<<< HEAD
 	/* MIDHARC-2364 was intended for tULx.
 	 * Workaround for the incorrectly applied THREAD_FEATURES to tDUx.
 	 */
 	gpu_id = kbdev->gpu_props.props.raw_props.gpu_id;
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	if ((gpu_id & GPU_ID2_PRODUCT_MODEL) == GPU_ID2_PRODUCT_TDUX) {
 		gpu_props->thread_props.max_registers =
 			KBASE_UBFX32(gpu_props->raw_props.thread_features,
@@ -677,9 +694,17 @@ int kbase_gpuprops_update_l2_features(struct kbase_device *kbdev)
 			int idx;
 			const bool asn_he = regdump.l2_config &
 					    L2_CONFIG_ASN_HASH_ENABLE_MASK;
+<<<<<<< HEAD
 			if (!asn_he && kbdev->l2_hash_values_override)
 				dev_err(kbdev->dev,
 					"Failed to use requested ASN_HASH, fallback to default");
+=======
+#if !IS_ENABLED(CONFIG_MALI_NO_MALI)
+			if (!asn_he && kbdev->l2_hash_values_override)
+				dev_err(kbdev->dev,
+					"Failed to use requested ASN_HASH, fallback to default");
+#endif
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			for (idx = 0; idx < ASN_HASH_COUNT; idx++)
 				dev_info(kbdev->dev,
 					 "%s ASN_HASH[%d] is [0x%08x]\n",
@@ -820,7 +845,11 @@ int kbase_gpuprops_populate_user_buffer(struct kbase_device *kbdev)
 	}
 
 	kprops->prop_buffer_size = size;
+<<<<<<< HEAD
 	kprops->prop_buffer = kmalloc(size, GFP_KERNEL);
+=======
+	kprops->prop_buffer = kzalloc(size, GFP_KERNEL);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	if (!kprops->prop_buffer) {
 		kprops->prop_buffer_size = 0;

@@ -21,9 +21,12 @@
 
 /*
  * Code for supporting explicit Linux fences (CONFIG_SYNC_FILE)
+<<<<<<< HEAD
  * Introduced in kernel 4.9.
  * Android explicit fences (CONFIG_SYNC) can be used for older kernels
  * (see mali_kbase_sync_android.c)
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  */
 
 #include <linux/sched.h>
@@ -59,7 +62,11 @@ int kbase_sync_fence_stream_create(const char *name, int *const out_fd)
 }
 
 #if !MALI_USE_CSF
+<<<<<<< HEAD
 struct sync_file *kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int stream_fd)
+=======
+int kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int stream_fd)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 #if (KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE)
 	struct fence *fence;
@@ -67,10 +74,18 @@ struct sync_file *kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int s
 	struct dma_fence *fence;
 #endif
 	struct sync_file *sync_file;
+<<<<<<< HEAD
 
 	fence = kbase_fence_out_new(katom);
 	if (!fence)
 		return NULL;
+=======
+	int fd;
+
+	fence = kbase_fence_out_new(katom);
+	if (!fence)
+		return -ENOMEM;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #if (KERNEL_VERSION(4, 9, 67) >= LINUX_VERSION_CODE)
 	/* Take an extra reference to the fence on behalf of the sync_file.
@@ -88,9 +103,25 @@ struct sync_file *kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int s
 		dma_fence_put(fence);
 #endif
 		kbase_fence_out_remove(katom);
+<<<<<<< HEAD
 		return NULL;
 	}
 	return sync_file;
+=======
+		return -ENOMEM;
+	}
+
+	fd = get_unused_fd_flags(O_CLOEXEC);
+	if (fd < 0) {
+		fput(sync_file->file);
+		kbase_fence_out_remove(katom);
+		return fd;
+	}
+
+	fd_install(fd, sync_file->file);
+
+	return fd;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 int kbase_sync_fence_in_from_fd(struct kbase_jd_atom *katom, int fd)
@@ -177,14 +208,23 @@ static void kbase_fence_wait_callback(struct dma_fence *fence,
 		kbase_fence_dep_count_set(katom, -1);
 
 		/* To prevent a potential deadlock we schedule the work onto the
+<<<<<<< HEAD
 		 * job_done_worker kthread
+=======
+		 * job_done_wq workqueue
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		 *
 		 * The issue is that we may signal the timeline while holding
 		 * kctx->jctx.lock and the callbacks are run synchronously from
 		 * sync_timeline_signal. So we simply defer the work.
 		 */
+<<<<<<< HEAD
 		kthread_init_work(&katom->work, kbase_sync_fence_wait_worker);
 		kthread_queue_work(&kctx->kbdev->job_done_worker, &katom->work);
+=======
+		INIT_WORK(&katom->work, kbase_sync_fence_wait_worker);
+		queue_work(kctx->jctx.job_done_wq, &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 }
 
@@ -226,8 +266,13 @@ int kbase_sync_fence_in_wait(struct kbase_jd_atom *katom)
 		/* We should cause the dependent jobs in the bag to be failed,
 		 * to do this we schedule the work queue to complete this job
 		 */
+<<<<<<< HEAD
 		kthread_init_work(&katom->work, kbase_sync_fence_wait_worker);
 		kthread_queue_work(&katom->kctx->kbdev->job_done_worker, &katom->work);
+=======
+		INIT_WORK(&katom->work, kbase_sync_fence_wait_worker);
+		queue_work(katom->kctx->jctx.job_done_wq, &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	return 1; /* completion to be done later by callback/worker */
@@ -277,7 +322,11 @@ void kbase_sync_fence_info_get(struct dma_fence *fence,
 {
 	info->fence = fence;
 
+<<<<<<< HEAD
 	/* translate into CONFIG_SYNC status:
+=======
+	/* Translate into the following status, with support for error handling:
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	 * < 0 : error
 	 * 0 : active
 	 * 1 : signaled

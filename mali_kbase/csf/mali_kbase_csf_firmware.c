@@ -528,6 +528,58 @@ static inline bool entry_find_large_page_to_reuse(
 	*pma = NULL;
 
 
+	/* If the section starts at 2MB aligned boundary,
+	 * then use 2MB page(s) for it.
+	 */
+	if (!(virtual_start & (SZ_2M - 1))) {
+		*num_pages_aligned =
+			round_up(*num_pages_aligned, NUM_4K_PAGES_IN_2MB_PAGE);
+		*is_small_page = false;
+		goto out;
+	}
+
+	/* If the section doesn't lie within the same 2MB aligned boundary,
+	 * then use 4KB pages as it would be complicated to use a 2MB page
+	 * for such section.
+	 */
+	if ((virtual_start & ~(SZ_2M - 1)) != (virtual_end & ~(SZ_2M - 1)))
+		goto out;
+
+	/* Find the nearest 2MB aligned section which comes before the current
+	 * section.
+	 */
+	list_for_each_entry(interface, &kbdev->csf.firmware_interfaces, node) {
+		const u32 virtual_diff = virtual_start - interface->virtual;
+
+		if (interface->virtual > virtual_end)
+			continue;
+
+		if (interface->virtual & (SZ_2M - 1))
+			continue;
+
+		if (virtual_diff < virtual_diff_min) {
+			target_interface = interface;
+			virtual_diff_min = virtual_diff;
+		}
+	}
+
+	if (target_interface) {
+		const u32 page_index = virtual_diff_min >> PAGE_SHIFT;
+
+		if (page_index >= target_interface->num_pages_aligned)
+			goto out;
+
+		if (target_interface->phys)
+			*phys = &target_interface->phys[page_index];
+
+		if (target_interface->pma)
+			*pma = &target_interface->pma[page_index / NUM_4K_PAGES_IN_2MB_PAGE];
+
+		*is_small_page = false;
+		reuse_large_page = true;
+	}
+
+out:
 	return reuse_large_page;
 }
 

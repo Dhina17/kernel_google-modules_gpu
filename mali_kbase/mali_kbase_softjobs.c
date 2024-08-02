@@ -23,9 +23,14 @@
 
 #include <linux/dma-buf.h>
 #include <asm/cacheflush.h>
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
 #include <mali_kbase_sync.h>
 #include <mali_kbase_fence.h>
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+#include <mali_kbase_sync.h>
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #endif
 #include <linux/dma-mapping.h>
 #include <uapi/gpu/arm/midgard/mali_base_kernel.h>
@@ -40,7 +45,10 @@
 #include <linux/sched.h>
 #include <linux/kernel.h>
 #include <linux/cache.h>
+<<<<<<< HEAD
 #include <linux/file.h>
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #if !MALI_USE_CSF
 /**
@@ -206,31 +214,53 @@ static int kbase_dump_cpu_gpu_time(struct kbase_jd_atom *katom)
 	return 0;
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /* Called by the explicit fence mechanism when a fence wait has completed */
 void kbase_soft_event_wait_callback(struct kbase_jd_atom *katom)
 {
 	struct kbase_context *kctx = katom->kctx;
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	kbasep_remove_waiting_soft_job(katom);
 	kbase_finish_soft_job(katom);
 	if (kbase_jd_done_nolock(katom, true))
 		kbase_js_sched_all(kctx->kbdev);
+<<<<<<< HEAD
 	rt_mutex_unlock(&kctx->jctx.lock);
 }
 #endif
 
 static void kbasep_soft_event_complete_job(struct kthread_work *work)
+=======
+	mutex_unlock(&kctx->jctx.lock);
+}
+#endif
+
+static void kbasep_soft_event_complete_job(struct work_struct *work)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_jd_atom *katom = container_of(work, struct kbase_jd_atom,
 			work);
 	struct kbase_context *kctx = katom->kctx;
 	int resched;
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
 	resched = kbase_jd_done_nolock(katom, true);
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+	resched = kbase_jd_done_nolock(katom, true);
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	if (resched)
 		kbase_js_sched_all(kctx->kbdev);
@@ -253,10 +283,17 @@ void kbasep_complete_triggered_soft_events(struct kbase_context *kctx, u64 evt)
 				list_del(&katom->queue);
 
 				katom->event_code = BASE_JD_EVENT_DONE;
+<<<<<<< HEAD
 				kthread_init_work(&katom->work,
 					kbasep_soft_event_complete_job);
 				kthread_queue_work(&kctx->kbdev->job_done_worker,
 					&katom->work);
+=======
+				INIT_WORK(&katom->work,
+					  kbasep_soft_event_complete_job);
+				queue_work(kctx->jctx.job_done_wq,
+					   &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			} else {
 				/* There are still other waiting jobs, we cannot
 				 * cancel the timer yet.
@@ -352,16 +389,26 @@ struct kbase_fence_debug_work {
 	struct work_struct work;
 };
 
+<<<<<<< HEAD
 static void kbase_fence_debug_wait_timeout_worker(struct kthread_work *work)
+=======
+static void kbase_fence_debug_wait_timeout_worker(struct work_struct *work)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_fence_debug_work *w = container_of(work,
 			struct kbase_fence_debug_work, work);
 	struct kbase_jd_atom *katom = w->katom;
 	struct kbase_context *kctx = katom->kctx;
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
 	kbase_fence_debug_wait_timeout(katom);
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+	kbase_fence_debug_wait_timeout(katom);
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	kfree(w);
 }
@@ -371,15 +418,24 @@ static void kbase_fence_debug_timeout(struct kbase_jd_atom *katom)
 	struct kbase_fence_debug_work *work;
 	struct kbase_context *kctx = katom->kctx;
 
+<<<<<<< HEAD
 	/* Enqueue fence debug worker. Use job_done_worker to get
+=======
+	/* Enqueue fence debug worker. Use job_done_wq to get
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	 * debug print ordered with job completion.
 	 */
 	work = kzalloc(sizeof(struct kbase_fence_debug_work), GFP_ATOMIC);
 	/* Ignore allocation failure. */
 	if (work) {
 		work->katom = katom;
+<<<<<<< HEAD
 		kthread_init_work(&work->work, kbase_fence_debug_wait_timeout_worker);
 		kthread_queue_work(&kctx->kbdev->job_done_worker, &work->work);
+=======
+		INIT_WORK(&work->work, kbase_fence_debug_wait_timeout_worker);
+		queue_work(kctx->jctx.job_done_wq, &work->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 }
 #endif /* CONFIG_MALI_FENCE_DEBUG */
@@ -415,8 +471,13 @@ void kbasep_soft_job_timeout_worker(struct timer_list *timer)
 			list_del(&katom->queue);
 
 			katom->event_code = BASE_JD_EVENT_JOB_CANCELLED;
+<<<<<<< HEAD
 			kthread_init_work(&katom->work, kbasep_soft_event_complete_job);
 			kthread_queue_work(&kctx->kbdev->job_done_worker, &katom->work);
+=======
+			INIT_WORK(&katom->work, kbasep_soft_event_complete_job);
+			queue_work(kctx->jctx.job_done_wq, &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			break;
 #ifdef CONFIG_MALI_FENCE_DEBUG
 		case BASE_JD_REQ_SOFT_FENCE_WAIT:
@@ -481,7 +542,11 @@ int kbase_soft_event_update(struct kbase_context *kctx,
 {
 	int err = 0;
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	if (kbasep_write_soft_event_status(kctx, event, new_status)) {
 		err = -ENOENT;
@@ -492,7 +557,11 @@ int kbase_soft_event_update(struct kbase_context *kctx,
 		kbasep_complete_triggered_soft_events(kctx, event);
 
 out:
+<<<<<<< HEAD
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	return err;
 }
@@ -504,7 +573,10 @@ static void kbasep_soft_event_cancel_job(struct kbase_jd_atom *katom)
 		kbase_js_sched_all(katom->kctx->kbdev);
 }
 
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 static void kbase_debug_copy_finish(struct kbase_jd_atom *katom)
 {
 	struct kbase_debug_copy_buffer *buffers = katom->softjob_data;
@@ -731,6 +803,10 @@ out_cleanup:
 
 	return ret;
 }
+<<<<<<< HEAD
+=======
+#endif /* !MALI_USE_CSF */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #if KERNEL_VERSION(5, 6, 0) <= LINUX_VERSION_CODE
 static void *dma_buf_kmap_page(struct kbase_mem_phy_alloc *gpu_alloc,
@@ -762,6 +838,7 @@ static void *dma_buf_kmap_page(struct kbase_mem_phy_alloc *gpu_alloc,
 }
 #endif
 
+<<<<<<< HEAD
 /**
  * kbase_mem_copy_from_extres() - Copy from external resources.
  *
@@ -774,6 +851,10 @@ static void *dma_buf_kmap_page(struct kbase_mem_phy_alloc *gpu_alloc,
  */
 static int kbase_mem_copy_from_extres(struct kbase_context *kctx,
 				      struct kbase_debug_copy_buffer *buf_data)
+=======
+int kbase_mem_copy_from_extres(struct kbase_context *kctx,
+		struct kbase_debug_copy_buffer *buf_data)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	unsigned int i;
 	unsigned int target_page_nr = 0;
@@ -860,6 +941,10 @@ out_unlock:
 	return ret;
 }
 
+<<<<<<< HEAD
+=======
+#if !MALI_USE_CSF
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 static int kbase_debug_copy(struct kbase_jd_atom *katom)
 {
 	struct kbase_debug_copy_buffer *buffers = katom->softjob_data;
@@ -877,7 +962,10 @@ static int kbase_debug_copy(struct kbase_jd_atom *katom)
 
 	return 0;
 }
+<<<<<<< HEAD
 #endif /* IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST */
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #endif /* !MALI_USE_CSF */
 
 #define KBASEP_JIT_ALLOC_GPU_ADDR_ALIGNMENT ((u32)0x7)
@@ -1350,17 +1438,28 @@ static void kbase_jit_free_process(struct kbase_jd_atom *katom)
 	}
 }
 
+<<<<<<< HEAD
 static void kbasep_jit_finish_worker(struct kthread_work *work)
+=======
+static void kbasep_jit_finish_worker(struct work_struct *work)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_jd_atom *katom = container_of(work, struct kbase_jd_atom,
 			work);
 	struct kbase_context *kctx = katom->kctx;
 	int resched;
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
 	kbase_finish_soft_job(katom);
 	resched = kbase_jd_done_nolock(katom, true);
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+	kbase_finish_soft_job(katom);
+	resched = kbase_jd_done_nolock(katom, true);
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	if (resched)
 		kbase_js_sched_all(kctx->kbdev);
@@ -1381,9 +1480,15 @@ void kbase_jit_retry_pending_alloc(struct kbase_context *kctx)
 		kbase_kinstr_jm_atom_sw_start(pending_atom);
 		if (kbase_jit_allocate_process(pending_atom) == 0) {
 			/* Atom has completed */
+<<<<<<< HEAD
 			kthread_init_work(&pending_atom->work,
 					kbasep_jit_finish_worker);
 			kthread_queue_work(&kctx->kbdev->job_done_worker, &pending_atom->work);
+=======
+			INIT_WORK(&pending_atom->work,
+					kbasep_jit_finish_worker);
+			queue_work(kctx->jctx.job_done_wq, &pending_atom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 		KBASE_TLSTREAM_TL_EVENT_ATOM_SOFTJOB_END(kctx->kbdev, pending_atom);
 		kbase_kinstr_jm_atom_sw_stop(pending_atom);
@@ -1488,11 +1593,18 @@ static void kbase_ext_res_process(struct kbase_jd_atom *katom, bool map)
 			if (!kbase_sticky_resource_acquire(katom->kctx,
 					gpu_addr))
 				goto failed_loop;
+<<<<<<< HEAD
 		} else {
 			if (!kbase_sticky_resource_release_force(katom->kctx, NULL,
 					gpu_addr))
 				failed = true;
 		}
+=======
+		} else
+			if (!kbase_sticky_resource_release_force(katom->kctx, NULL,
+					gpu_addr))
+				failed = true;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	/*
@@ -1552,7 +1664,11 @@ int kbase_process_soft_job(struct kbase_jd_atom *katom)
 		ret = kbase_dump_cpu_gpu_time(katom);
 		break;
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_FENCE_TRIGGER:
 		katom->event_code = kbase_sync_fence_out_trigger(katom,
 				katom->event_code == BASE_JD_EVENT_DONE ?
@@ -1581,7 +1697,10 @@ int kbase_process_soft_job(struct kbase_jd_atom *katom)
 	case BASE_JD_REQ_SOFT_EVENT_RESET:
 		kbasep_soft_event_update_locked(katom, BASE_JD_SOFT_EVENT_RESET);
 		break;
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_DEBUG_COPY:
 	{
 		int res = kbase_debug_copy(katom);
@@ -1590,7 +1709,10 @@ int kbase_process_soft_job(struct kbase_jd_atom *katom)
 			katom->event_code = BASE_JD_EVENT_JOB_INVALID;
 		break;
 	}
+<<<<<<< HEAD
 #endif /* IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST */
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_JIT_ALLOC:
 		ret = kbase_jit_allocate_process(katom);
 		break;
@@ -1614,7 +1736,11 @@ int kbase_process_soft_job(struct kbase_jd_atom *katom)
 void kbase_cancel_soft_job(struct kbase_jd_atom *katom)
 {
 	switch (katom->core_req & BASE_JD_REQ_SOFT_JOB_TYPE) {
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_FENCE_WAIT:
 		kbase_sync_fence_in_cancel_wait(katom);
 		break;
@@ -1637,11 +1763,18 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 				return -EINVAL;
 		}
 		break;
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
 	case BASE_JD_REQ_SOFT_FENCE_TRIGGER:
 		{
 			struct base_fence fence;
 			struct sync_file *sync_file;
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+	case BASE_JD_REQ_SOFT_FENCE_TRIGGER:
+		{
+			struct base_fence fence;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			int fd;
 
 			if (copy_from_user(&fence,
@@ -1649,6 +1782,7 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 					   sizeof(fence)) != 0)
 				return -EINVAL;
 
+<<<<<<< HEAD
 			sync_file = kbase_sync_fence_out_create(katom,
 							 fence.basep.stream_fd);
 			if (!sync_file)
@@ -1660,6 +1794,12 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 				kbase_fence_out_remove(katom);
 				return fd;
 			}
+=======
+			fd = kbase_sync_fence_out_create(katom,
+							 fence.basep.stream_fd);
+			if (fd < 0)
+				return -EINVAL;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 			fence.basep.fd = fd;
 			if (copy_to_user((__user void *)(uintptr_t)katom->jc,
@@ -1674,7 +1814,10 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 				fence.basep.fd = -EINVAL;
 				return -EINVAL;
 			}
+<<<<<<< HEAD
 			fd_install(fd, sync_file->file);
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 		break;
 	case BASE_JD_REQ_SOFT_FENCE_WAIT:
@@ -1705,7 +1848,11 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 #endif /* CONFIG_MALI_DMA_FENCE */
 		}
 		break;
+<<<<<<< HEAD
 #endif /* CONFIG_SYNC || CONFIG_SYNC_FILE */
+=======
+#endif /* CONFIG_SYNC_FILE */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_JIT_ALLOC:
 		return kbase_jit_allocate_prepare(katom);
 	case BASE_JD_REQ_SOFT_JIT_FREE:
@@ -1716,10 +1863,15 @@ int kbase_prepare_soft_job(struct kbase_jd_atom *katom)
 		if (katom->jc == 0)
 			return -EINVAL;
 		break;
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST
 	case BASE_JD_REQ_SOFT_DEBUG_COPY:
 		return kbase_debug_copy_prepare(katom);
 #endif /* IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST */
+=======
+	case BASE_JD_REQ_SOFT_DEBUG_COPY:
+		return kbase_debug_copy_prepare(katom);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_EXT_RES_MAP:
 		return kbase_ext_res_prepare(katom);
 	case BASE_JD_REQ_SOFT_EXT_RES_UNMAP:
@@ -1740,7 +1892,11 @@ void kbase_finish_soft_job(struct kbase_jd_atom *katom)
 	case BASE_JD_REQ_SOFT_DUMP_CPU_GPU_TIME:
 		/* Nothing to do */
 		break;
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_FENCE_TRIGGER:
 		/* If fence has not yet been signaled, do it now */
 		kbase_sync_fence_out_trigger(katom, katom->event_code ==
@@ -1750,12 +1906,19 @@ void kbase_finish_soft_job(struct kbase_jd_atom *katom)
 		/* Release katom's reference to fence object */
 		kbase_sync_fence_in_remove(katom);
 		break;
+<<<<<<< HEAD
 #endif /* CONFIG_SYNC || CONFIG_SYNC_FILE */
 #if IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST
 	case BASE_JD_REQ_SOFT_DEBUG_COPY:
 		kbase_debug_copy_finish(katom);
 		break;
 #endif /* IS_ENABLED(CONFIG_MALI_VECTOR_DUMP) || MALI_UNIT_TEST */
+=======
+#endif /* CONFIG_SYNC_FILE */
+	case BASE_JD_REQ_SOFT_DEBUG_COPY:
+		kbase_debug_copy_finish(katom);
+		break;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	case BASE_JD_REQ_SOFT_JIT_ALLOC:
 		kbase_jit_allocate_finish(katom);
 		break;
@@ -1797,7 +1960,11 @@ void kbase_resume_suspended_soft_jobs(struct kbase_device *kbdev)
 			&local_suspended_soft_jobs, dep_item[1]) {
 		struct kbase_context *kctx = katom_iter->kctx;
 
+<<<<<<< HEAD
 		rt_mutex_lock(&kctx->jctx.lock);
+=======
+		mutex_lock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 		/* Remove from the global list */
 		list_del(&katom_iter->dep_item[1]);
@@ -1811,7 +1978,11 @@ void kbase_resume_suspended_soft_jobs(struct kbase_device *kbdev)
 			atomic_dec(&kbdev->pm.gpu_users_waiting);
 #endif /* CONFIG_MALI_ARBITER_SUPPORT */
 		}
+<<<<<<< HEAD
 		rt_mutex_unlock(&kctx->jctx.lock);
+=======
+		mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	if (resched)

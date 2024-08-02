@@ -531,6 +531,7 @@ TRACE_EVENT(mali_jit_trim,
 	TP_printk("freed_pages=%zu", __entry->freed_pages)
 );
 
+<<<<<<< HEAD
 /* trace_mali_protected_mode
  *
  * Trace point to indicate if GPU is in protected mode
@@ -548,6 +549,8 @@ TRACE_EVENT(mali_protected_mode,
 );
 
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #include "debug/mali_kbase_debug_linux_ktrace.h"
 
 #endif /* _TRACE_MALI_H */

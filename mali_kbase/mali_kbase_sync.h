@@ -30,9 +30,12 @@
 
 #include <linux/fdtable.h>
 #include <linux/syscalls.h>
+<<<<<<< HEAD
 #if IS_ENABLED(CONFIG_SYNC)
 #include <sync.h>
 #endif
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #if IS_ENABLED(CONFIG_SYNC_FILE)
 #include "mali_kbase_fence_defs.h"
 #include <linux/sync_file.h>
@@ -79,7 +82,11 @@ int kbase_sync_fence_stream_create(const char *name, int *const out_fd);
  *
  * Return: Valid file descriptor to fence or < 0 on error
  */
+<<<<<<< HEAD
 struct sync_file *kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int stream_fd);
+=======
+int kbase_sync_fence_out_create(struct kbase_jd_atom *katom, int stream_fd);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 /**
  * kbase_sync_fence_in_from_fd() - Assigns an existing fence to specified atom
@@ -181,7 +188,11 @@ int kbase_sync_fence_out_info_get(struct kbase_jd_atom *katom,
 				  struct kbase_sync_fence_info *info);
 #endif /* !MALI_USE_CSF */
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #if (KERNEL_VERSION(4, 10, 0) > LINUX_VERSION_CODE)
 void kbase_sync_fence_info_get(struct fence *fence,
 			       struct kbase_sync_fence_info *info);
@@ -204,7 +215,11 @@ const char *kbase_sync_status_string(int status);
 /*
  * Internal worker used to continue processing of atom.
  */
+<<<<<<< HEAD
 void kbase_sync_fence_wait_worker(struct kthread_work *data);
+=======
+void kbase_sync_fence_wait_worker(struct work_struct *data);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #ifdef CONFIG_MALI_FENCE_DEBUG
 /**

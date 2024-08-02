@@ -133,6 +133,7 @@ int kbase_mmu_hw_do_unlock_no_addr(struct kbase_device *kbdev, struct kbase_as *
 int kbase_mmu_hw_do_unlock(struct kbase_device *kbdev, struct kbase_as *as,
 			   const struct kbase_mmu_hw_op_param *op_param);
 /**
+<<<<<<< HEAD
  * kbase_mmu_hw_do_lock - Issue a LOCK operation to the MMU.
  *
  * @kbdev:      Kbase device to issue the MMU operation on.
@@ -148,6 +149,8 @@ int kbase_mmu_hw_do_lock(struct kbase_device *kbdev, struct kbase_as *as,
 			  const struct kbase_mmu_hw_op_param *op_param);
 
 /**
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * kbase_mmu_hw_do_flush - Issue a flush operation to the MMU.
  *
  * @kbdev:      Kbase device to issue the MMU operation on.
@@ -160,8 +163,11 @@ int kbase_mmu_hw_do_lock(struct kbase_device *kbdev, struct kbase_as *as,
  * GPUs where MMU command to flush the cache(s) is deprecated.
  * mmu_hw_mutex needs to be held when calling this function.
  *
+<<<<<<< HEAD
  * Context: Acquires the hwaccess_lock, expects the caller to hold the mmu_hw_mutex
  *
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * Return: Zero if the operation was successful, non-zero otherwise.
  */
 int kbase_mmu_hw_do_flush(struct kbase_device *kbdev, struct kbase_as *as,

@@ -217,6 +217,7 @@ int kbase_mem_evictable_make(struct kbase_mem_phy_alloc *gpu_alloc);
  */
 bool kbase_mem_evictable_unmake(struct kbase_mem_phy_alloc *alloc);
 
+<<<<<<< HEAD
 typedef unsigned int kbase_vmap_flag;
 
 /* Sync operations are needed on beginning and ending of access to kernel-mapped GPU memory.
@@ -237,6 +238,8 @@ typedef unsigned int kbase_vmap_flag;
 /* Set of flags that can be passed into kbase_vmap-related functions */
 #define KBASE_VMAP_INPUT_FLAGS (KBASE_VMAP_FLAG_PERMANENT_MAP_ACCOUNTING)
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 struct kbase_vmap_struct {
 	off_t offset_in_page;
 	struct kbase_mem_phy_alloc *cpu_alloc;
@@ -245,6 +248,7 @@ struct kbase_vmap_struct {
 	struct tagged_addr *gpu_pages;
 	void *addr;
 	size_t size;
+<<<<<<< HEAD
 	kbase_vmap_flag flags;
 };
 
@@ -294,6 +298,11 @@ int kbase_mem_shrink_gpu_mapping(struct kbase_context *kctx, struct kbase_va_reg
 void *kbase_vmap_reg(struct kbase_context *kctx, struct kbase_va_region *reg, u64 gpu_addr,
 		     size_t size, unsigned long prot_request, struct kbase_vmap_struct *map,
 		     kbase_vmap_flag vmap_flags);
+=======
+	bool sync_needed;
+};
+
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 /**
  * kbase_vmap_prot - Map a GPU VA range into the kernel safely, only if the

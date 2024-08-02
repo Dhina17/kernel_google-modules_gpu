@@ -29,7 +29,7 @@
 #include <mali_kbase_jm.h>
 #include <mali_kbase_js.h>
 #include <tl/mali_kbase_tracepoints.h>
-#include <mali_kbase_hwcnt_context.h>
+#include <hwcnt/mali_kbase_hwcnt_context.h>
 #include <mali_kbase_reset_gpu.h>
 #include <mali_kbase_kinstr_jm.h>
 #include <backend/gpu/mali_kbase_cache_policy_backend.h>
@@ -1181,6 +1181,10 @@ bool kbase_gpu_irq_evict(struct kbase_device *kbdev, int js,
  * otherwise we would be in the incorrect state of having an atom both running
  * on the HW and returned to the JS.
  */
+<<<<<<< HEAD
+=======
+
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 void kbase_gpu_complete_hw(struct kbase_device *kbdev, int js,
 				u32 completion_code,
 				u64 job_tail,

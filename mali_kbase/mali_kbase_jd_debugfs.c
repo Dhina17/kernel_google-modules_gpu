@@ -25,7 +25,11 @@
 #include <mali_kbase.h>
 #include <mali_kbase_jd_debugfs.h>
 #include <mali_kbase_dma_fence.h>
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #include <mali_kbase_sync.h>
 #endif
 #include <uapi/gpu/arm/midgard/mali_kbase_ioctl.h>
@@ -38,7 +42,11 @@ struct kbase_jd_debugfs_depinfo {
 static void kbase_jd_debugfs_fence_info(struct kbase_jd_atom *atom,
 					struct seq_file *sfile)
 {
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	struct kbase_sync_fence_info info;
 	int res;
 
@@ -58,7 +66,11 @@ static void kbase_jd_debugfs_fence_info(struct kbase_jd_atom *atom,
 	default:
 		break;
 	}
+<<<<<<< HEAD
 #endif /* CONFIG_SYNC || CONFIG_SYNC_FILE */
+=======
+#endif /* CONFIG_SYNC_FILE */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #ifdef CONFIG_MALI_DMA_FENCE
 	if (atom->core_req & BASE_JD_REQ_EXTERNAL_RESOURCES) {
@@ -164,7 +176,11 @@ static int kbasep_jd_debugfs_atoms_show(struct seq_file *sfile, void *data)
 
 	atoms = kctx->jctx.atoms;
 	/* General atom states */
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/* JS-related states */
 	spin_lock_irqsave(&kctx->kbdev->hwaccess_lock, irq_flags);
 	for (i = 0; i != BASE_JD_ATOM_COUNT; ++i) {
@@ -198,7 +214,11 @@ static int kbasep_jd_debugfs_atoms_show(struct seq_file *sfile, void *data)
 		seq_puts(sfile, "\n");
 	}
 	spin_unlock_irqrestore(&kctx->kbdev->hwaccess_lock, irq_flags);
+<<<<<<< HEAD
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	return 0;
 }

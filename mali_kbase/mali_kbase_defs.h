@@ -35,13 +35,13 @@
 #include <backend/gpu/mali_kbase_instr_defs.h>
 #include <mali_kbase_pm.h>
 #include <mali_kbase_gpuprops_types.h>
-#include <mali_kbase_hwcnt_watchdog_if.h>
+#include <hwcnt/mali_kbase_hwcnt_watchdog_if.h>
 
 #if MALI_USE_CSF
-#include <mali_kbase_hwcnt_backend_csf.h>
+#include <hwcnt/backend/mali_kbase_hwcnt_backend_csf.h>
 #else
-#include <mali_kbase_hwcnt_backend_jm.h>
-#include <mali_kbase_hwcnt_backend_jm_watchdog.h>
+#include <hwcnt/backend/mali_kbase_hwcnt_backend_jm.h>
+#include <hwcnt/backend/mali_kbase_hwcnt_backend_jm_watchdog.h>
 #endif
 
 #include <protected_mode_switcher.h>
@@ -53,11 +53,7 @@
 #include <linux/sizes.h>
 #include <linux/rtmutex.h>
 
-#if defined(CONFIG_SYNC)
-#include <sync.h>
-#else
 #include "mali_kbase_fence_defs.h"
-#endif
 
 #if IS_ENABLED(CONFIG_DEBUG_FS)
 #include <linux/debugfs.h>
@@ -123,6 +119,7 @@
 #define KBASE_REG_ZONE_MAX 4ul
 #endif
 
+<<<<<<< HEAD
 /**
  * Priority level for realtime worker threads
  */
@@ -149,12 +146,19 @@
  */
 #define KBASE_APC_MAX_DUR_USEC (4000)
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #include "mali_kbase_hwaccess_defs.h"
 
 /* Maximum number of pages of memory that require a permanent mapping, per
  * kbase_context
  */
+<<<<<<< HEAD
 #define KBASE_PERMANENTLY_MAPPED_MEM_LIMIT_PAGES ((64 * 1024ul * 1024ul) >> PAGE_SHIFT)
+=======
+#define KBASE_PERMANENTLY_MAPPED_MEM_LIMIT_PAGES ((32 * 1024ul * 1024ul) >> \
+								PAGE_SHIFT)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /* Minimum threshold period for hwcnt dumps between different hwcnt virtualizer
  * clients, to reduce undesired system load.
  * If a virtualizer client requests a dump within this threshold period after
@@ -289,7 +293,11 @@ struct kbase_fault {
  */
 struct kbase_mmu_table {
 	u64 *mmu_teardown_pages[MIDGARD_MMU_BOTTOMLEVEL];
+<<<<<<< HEAD
 	struct rt_mutex mmu_lock;
+=======
+	struct mutex mmu_lock;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	phys_addr_t pgd;
 	u8 group_id;
 	struct kbase_context *kctx;
@@ -580,7 +588,11 @@ struct kbase_devfreq_opp {
  * @entry_set_pte:    program the pte to be a valid entry to encode the physical
  *                    address of the next lower level page table and also update
  *                    the number of valid entries.
+<<<<<<< HEAD
  * @entries_invalidate: clear out or invalidate a range of ptes.
+=======
+ * @entry_invalidate: clear out or invalidate the pte.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @get_num_valid_entries: returns the number of valid entries for a specific pgd.
  * @set_num_valid_entries: sets the number of valid entries for a specific pgd
  * @flags:            bitmask of MMU mode flags. Refer to KBASE_MMU_MODE_ constants.
@@ -598,7 +610,11 @@ struct kbase_mmu_mode {
 	void (*entry_set_ate)(u64 *entry, struct tagged_addr phy,
 			unsigned long flags, int level);
 	void (*entry_set_pte)(u64 *entry, phys_addr_t phy);
+<<<<<<< HEAD
 	void (*entries_invalidate)(u64 *entry, u32 count);
+=======
+	void (*entry_invalidate)(u64 *entry);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	unsigned int (*get_num_valid_entries)(u64 *pgd);
 	void (*set_num_valid_entries)(u64 *pgd,
 				      unsigned int num_of_valid_entries);
@@ -646,9 +662,12 @@ struct kbase_devfreq_queue_info {
  * @total_gpu_pages:    Total gpu pages allocated across all the contexts
  *                      of this process, it accounts for both native allocations
  *                      and dma_buf imported allocations.
+<<<<<<< HEAD
  * @dma_buf_pages:      Total dma_buf pages allocated across all the contexts
  *                      of this process, native allocations can be accounted for
  *                      by subtracting this from &total_gpu_pages.
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @kctx_list:          List of kbase contexts created for the process.
  * @kprcs_node:         Node to a rb_tree, kbase_device will maintain a rb_tree
  *                      based on key tgid, kprcs_node is the node link to
@@ -658,19 +677,28 @@ struct kbase_devfreq_queue_info {
  *                      Used to ensure that pages of allocation are accounted
  *                      only once for the process, even if the allocation gets
  *                      imported multiple times for the process.
+<<<<<<< HEAD
  * @kobj:               Links to the per-process sysfs node
  *                      &kbase_device.proc_sysfs_node.
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  */
 struct kbase_process {
 	pid_t tgid;
 	size_t total_gpu_pages;
+<<<<<<< HEAD
 	size_t dma_buf_pages;
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	struct list_head kctx_list;
 
 	struct rb_node kprcs_node;
 	struct rb_root dma_buf_root;
+<<<<<<< HEAD
 
 	struct kobject kobj;
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 };
 
 /**
@@ -970,12 +998,16 @@ struct kbase_process {
  *                          mapping and gpu memory usage at device level and
  *                          other one at process level.
  * @total_gpu_pages:        Total GPU pages used for the complete GPU device.
+<<<<<<< HEAD
  * @dma_buf_pages:          Total dma_buf pages used for GPU platform device.
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @dma_buf_lock:           This mutex should be held while accounting for
  *                          @total_gpu_pages from imported dma buffers.
  * @gpu_mem_usage_lock:     This spinlock should be held while accounting
  *                          @total_gpu_pages for both native and dma-buf imported
  *                          allocations.
+<<<<<<< HEAD
  * @job_done_worker:        Worker for job_done work.
  * @event_worker:           Worker for event work.
  * @apc.worker:             Worker for async power control work.
@@ -985,6 +1017,8 @@ struct kbase_process {
  * @apc.timer:              A hrtimer for powering off based on wake duration.
  * @apc.pending:            Whether an APC power on request is active and not handled yet.
  * @apc.lock:               Lock for @apc.end_ts, @apc.timer and @apc.pending.
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @dummy_job_wa:           struct for dummy job execution workaround for the
  *                          GPU hang issue
  * @dummy_job_wa.ctx:       dummy job workaround context
@@ -997,7 +1031,10 @@ struct kbase_process {
  * @pcm_dev:                The priority control manager device.
  * @oom_notifier_block:     notifier_block containing kernel-registered out-of-
  *                          memory handler.
+<<<<<<< HEAD
  * @proc_sysfs_node:        Sysfs directory node to store per-process stats.
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  */
 struct kbase_device {
 	u32 hw_quirks_sc;
@@ -1234,9 +1271,12 @@ struct kbase_device {
 #else
 	struct kbasep_js_device_data js_data;
 
+<<<<<<< HEAD
 	struct kthread_worker job_done_worker;
 	struct kthread_worker event_worker;
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/* See KBASE_JS_*_PRIORITY_MODE for details. */
 	u32 js_ctx_scheduling_mode;
 
@@ -1249,6 +1289,7 @@ struct kbase_device {
 
 #endif /* MALI_USE_CSF */
 
+<<<<<<< HEAD
 	struct {
 		struct kthread_worker worker;
 		struct kthread_work power_on_work;
@@ -1259,11 +1300,16 @@ struct kbase_device {
 		struct mutex lock;
 	} apc;
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	struct rb_root process_root;
 	struct rb_root dma_buf_root;
 
 	size_t total_gpu_pages;
+<<<<<<< HEAD
 	size_t dma_buf_pages;
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	struct mutex dma_buf_lock;
 	spinlock_t gpu_mem_usage_lock;
 
@@ -1283,7 +1329,10 @@ struct kbase_device {
 
 	struct notifier_block oom_notifier_block;
 
+<<<<<<< HEAD
 	struct kobject *proc_sysfs_node;
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 };
 
 /**
@@ -1532,6 +1581,11 @@ struct kbase_sub_alloc {
  * @event_closed:         Flag set through POST_TERM ioctl, indicates that Driver
  *                        should stop posting events and also inform event handling
  *                        thread that context termination is in progress.
+<<<<<<< HEAD
+=======
+ * @event_workq:          Workqueue for processing work items corresponding to atoms
+ *                        that do not return an event to userspace.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @event_count:          Count of the posted events to be consumed by Userspace.
  * @event_coalesce_count: Count of the events present in @event_coalesce_list.
  * @flags:                bitmap of enums from kbase_context_flags, indicating the
@@ -1644,6 +1698,7 @@ struct kbase_sub_alloc {
  *                        is scheduled in and an atom is pulled from the context's per
  *                        slot runnable tree in JM GPU or GPU command queue
  *                        group is programmed on CSG slot in CSF GPU.
+<<<<<<< HEAD
  * @process_mm:           Pointer to the memory descriptor of the process which
  *                        created the context. Used for accounting the physical
  *                        pages used for GPU allocations, done for the context,
@@ -1651,6 +1706,13 @@ struct kbase_sub_alloc {
  *                        on this descriptor for the Userspace created contexts so that
  *                        Kbase can safely access it to update the memory usage counters.
  *                        The reference is dropped on context termination.
+=======
+ * @mm_update_lock:       lock used for handling of special tracking page.
+ * @process_mm:           Pointer to the memory descriptor of the process which
+ *                        created the context. Used for accounting the physical
+ *                        pages used for GPU allocations, done for the context,
+ *                        to the memory consumed by the process.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @gpu_va_end:           End address of the GPU va space (in 4KB page units)
  * @running_total_tiler_heap_nr_chunks: Running total of number of chunks in all
  *                        tiler heaps of the kbase context.
@@ -1689,7 +1751,11 @@ struct kbase_sub_alloc {
  * @completed_jobs:       List containing completed atoms for which base_jd_event is
  *                        to be posted.
  * @work_count:           Number of work items, corresponding to atoms, currently
+<<<<<<< HEAD
  *                        pending on job_done kthread of @jctx.
+=======
+ *                        pending on job_done workqueue of @jctx.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @soft_job_timeout:     Timer object used for failing/cancelling the waiting
  *                        soft-jobs which have been blocked for more than the
  *                        timeout value used for the soft-jobs
@@ -1871,7 +1937,12 @@ struct kbase_context {
 
 	atomic_t refcount;
 
+<<<<<<< HEAD
 	struct mm_struct *process_mm;
+=======
+	spinlock_t         mm_update_lock;
+	struct mm_struct __rcu *process_mm;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	u64 gpu_va_end;
 #if MALI_USE_CSF
 	u32 running_total_tiler_heap_nr_chunks;
@@ -1932,7 +2003,13 @@ struct kbase_context {
 
 	u64 limited_core_mask;
 
+<<<<<<< HEAD
 	void *platform_data;
+=======
+#if !MALI_USE_CSF
+	void *platform_data;
+#endif
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 };
 
 #ifdef CONFIG_MALI_CINSTR_GWT
@@ -1961,15 +2038,28 @@ struct kbasep_gwt_list_element {
  *                                 to a @kbase_context.
  * @ext_res_node:                  List head for adding the metadata to a
  *                                 @kbase_context.
+<<<<<<< HEAD
  * @reg:                           External resource information, containing
  *                                 the corresponding VA region
+=======
+ * @alloc:                         The physical memory allocation structure
+ *                                 which is mapped.
+ * @gpu_addr:                      The GPU virtual address the resource is
+ *                                 mapped to.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * @ref:                           Reference count.
  *
  * External resources can be mapped into multiple contexts as well as the same
  * context multiple times.
+<<<<<<< HEAD
  * As kbase_va_region is refcounted, we guarantee that it will be available
  * for the duration of the external resource, meaning it is sufficient to use
  * it to rederive any additional data, like the GPU address.
+=======
+ * As kbase_va_region itself isn't refcounted we can't attach our extra
+ * information to it as it could be removed under our feet leaving external
+ * resources pinned.
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  * This metadata structure binds a single external resource to a single
  * context, ensuring that per context mapping is tracked separately so it can
  * be overridden when needed and abuses by the application (freeing the resource
@@ -1977,7 +2067,12 @@ struct kbasep_gwt_list_element {
  */
 struct kbase_ctx_ext_res_meta {
 	struct list_head ext_res_node;
+<<<<<<< HEAD
 	struct kbase_va_region *reg;
+=======
+	struct kbase_mem_phy_alloc *alloc;
+	u64 gpu_addr;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	u32 ref;
 };
 
@@ -2032,7 +2127,11 @@ static inline u64 kbase_get_lock_region_min_size_log2(struct kbase_gpu_props con
 /* Maximum number of loops polling the GPU for a cache flush before we assume it must have completed */
 #define KBASE_CLEAN_CACHE_MAX_LOOPS     100000
 /* Maximum number of loops polling the GPU for an AS command to complete before we assume the GPU has hung */
+<<<<<<< HEAD
 #define KBASE_AS_INACTIVE_MAX_LOOPS     100000
+=======
+#define KBASE_AS_INACTIVE_MAX_LOOPS     100000000
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /* Maximum number of loops polling the GPU PRFCNT_ACTIVE bit before we assume the GPU has hung */
 #define KBASE_PRFCNT_ACTIVE_MAX_LOOPS   100000000
 

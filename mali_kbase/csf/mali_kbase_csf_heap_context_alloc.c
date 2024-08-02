@@ -163,8 +163,8 @@ u64 kbase_csf_heap_context_allocator_alloc(
 	struct kbase_csf_heap_context_allocator *const ctx_alloc)
 {
 	struct kbase_context *const kctx = ctx_alloc->kctx;
-	u64 flags = BASE_MEM_PROT_GPU_RD | BASE_MEM_PROT_GPU_WR | BASE_MEM_PROT_CPU_WR |
-		    BASEP_MEM_NO_USER_FREE | BASE_MEM_PROT_CPU_RD;
+	u64 flags = BASE_MEM_PROT_GPU_RD | BASE_MEM_PROT_GPU_WR |
+		BASE_MEM_PROT_CPU_WR | BASEP_MEM_NO_USER_FREE;
 	u64 nr_pages = PFN_UP(MAX_TILER_HEAPS * ctx_alloc->heap_context_size_aligned);
 	u64 heap_gpu_va = 0;
 
@@ -172,6 +172,10 @@ u64 kbase_csf_heap_context_allocator_alloc(
 	 * MMU operations.
 	 */
 	const enum kbase_caller_mmu_sync_info mmu_sync_info = CALLER_MMU_ASYNC;
+
+#ifdef CONFIG_MALI_VECTOR_DUMP
+	flags |= BASE_MEM_PROT_CPU_RD;
+#endif
 
 	mutex_lock(&ctx_alloc->lock);
 

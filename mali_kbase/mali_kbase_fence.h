@@ -25,10 +25,17 @@
 /*
  * mali_kbase_fence.[hc] has common fence code used by both
  * - CONFIG_MALI_DMA_FENCE - implicit DMA fences
+<<<<<<< HEAD
  * - CONFIG_SYNC_FILE      - explicit fences beginning with 4.9 kernel
  */
 
 #if defined(CONFIG_MALI_DMA_FENCE) || defined(CONFIG_SYNC_FILE)
+=======
+ * - CONFIG_SYNC_FILE      - explicit fences
+ */
+
+#if defined(CONFIG_MALI_DMA_FENCE) || IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #include <linux/list.h>
 #include "mali_kbase_fence_defs.h"
@@ -71,7 +78,11 @@ struct fence *kbase_fence_out_new(struct kbase_jd_atom *katom);
 struct dma_fence *kbase_fence_out_new(struct kbase_jd_atom *katom);
 #endif
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /**
  * kbase_fence_fence_in_set() - Assign input fence to atom
  * @katom: Atom to assign input fence to
@@ -102,7 +113,11 @@ static inline void kbase_fence_out_remove(struct kbase_jd_atom *katom)
 	}
 }
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /**
  * kbase_fence_in_remove() - Removes the input fence from atom
  * @katom: Atom to remove input fence for
@@ -247,7 +262,11 @@ static inline int kbase_fence_dep_count_read(struct kbase_jd_atom *katom)
  */
 bool kbase_fence_free_callbacks(struct kbase_jd_atom *katom);
 
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 /**
  * kbase_fence_in_get() - Retrieve input fence for atom.
  * @katom: Atom to get input fence from
@@ -288,6 +307,10 @@ bool kbase_fence_free_callbacks(struct kbase_jd_atom *katom);
 #define kbase_fence_put(fence) dma_fence_put(fence)
 
 
+<<<<<<< HEAD
 #endif /* CONFIG_MALI_DMA_FENCE || defined(CONFIG_SYNC_FILE */
+=======
+#endif /* CONFIG_MALI_DMA_FENCE || IS_ENABLED(CONFIG_SYNC_FILE) */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #endif /* _KBASE_FENCE_H_ */

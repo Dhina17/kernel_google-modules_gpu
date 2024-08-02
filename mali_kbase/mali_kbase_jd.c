@@ -185,7 +185,17 @@ static void kbase_jd_post_external_resources(struct kbase_jd_atom *katom)
 
 		res_no = katom->nr_extres;
 		while (res_no-- > 0) {
+<<<<<<< HEAD
 			kbase_unmap_external_resource(katom->kctx, katom->extres[res_no]);
+=======
+			struct kbase_mem_phy_alloc *alloc = katom->extres[res_no].alloc;
+			struct kbase_va_region *reg;
+
+			reg = kbase_region_tracker_find_region_base_address(
+					katom->kctx,
+					katom->extres[res_no].gpu_address);
+			kbase_unmap_external_resource(katom->kctx, reg, alloc);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 		kfree(katom->extres);
 		katom->extres = NULL;
@@ -201,7 +211,11 @@ static void kbase_jd_post_external_resources(struct kbase_jd_atom *katom)
 
 static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const struct base_jd_atom *user_atom)
 {
+<<<<<<< HEAD
 	int err = -EINVAL;
+=======
+	int err_ret_val = -EINVAL;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	u32 res_no;
 #ifdef CONFIG_MALI_DMA_FENCE
 	struct kbase_dma_fence_resv_info info = {
@@ -209,7 +223,11 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 		.dma_fence_resv_count = 0,
 		.dma_fence_excl_bitmap = NULL
 	};
+<<<<<<< HEAD
 #if defined(CONFIG_SYNC) || defined(CONFIG_SYNC_FILE)
+=======
+#if IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/*
 	 * When both dma-buf fence and Android native sync is enabled, we
 	 * disable dma-buf fence for contexts that are using Android native
@@ -217,9 +235,15 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 	 */
 	const bool implicit_sync = !kbase_ctx_flag(katom->kctx,
 						   KCTX_NO_IMPLICIT_SYNC);
+<<<<<<< HEAD
 #else /* CONFIG_SYNC || CONFIG_SYNC_FILE*/
 	const bool implicit_sync = true;
 #endif /* CONFIG_SYNC || CONFIG_SYNC_FILE */
+=======
+#else /* CONFIG_SYNC_FILE */
+	const bool implicit_sync = true;
+#endif /* CONFIG_SYNC_FILE */
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #endif /* CONFIG_MALI_DMA_FENCE */
 	struct base_external_resource *input_extres;
 
@@ -234,10 +258,28 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 	if (!katom->extres)
 		return -ENOMEM;
 
+<<<<<<< HEAD
 	input_extres = kmalloc_array(katom->nr_extres, sizeof(*input_extres), GFP_KERNEL);
 	if (!input_extres) {
 		err = -ENOMEM;
 		goto failed_input_alloc;
+=======
+	/* copy user buffer to the end of our real buffer.
+	 * Make sure the struct sizes haven't changed in a way
+	 * we don't support
+	 */
+	BUILD_BUG_ON(sizeof(*input_extres) > sizeof(*katom->extres));
+	input_extres = (struct base_external_resource *)
+			(((unsigned char *)katom->extres) +
+			(sizeof(*katom->extres) - sizeof(*input_extres)) *
+			katom->nr_extres);
+
+	if (copy_from_user(input_extres,
+			get_compat_pointer(katom->kctx, user_atom->extres_list),
+			sizeof(*input_extres) * katom->nr_extres) != 0) {
+		err_ret_val = -EINVAL;
+		goto early_err_out;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 #ifdef CONFIG_MALI_DMA_FENCE
@@ -251,20 +293,31 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 #endif
 				      GFP_KERNEL);
 		if (!info.resv_objs) {
+<<<<<<< HEAD
 			err = -ENOMEM;
 			goto failed_input_copy;
+=======
+			err_ret_val = -ENOMEM;
+			goto early_err_out;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 
 		info.dma_fence_excl_bitmap =
 				kcalloc(BITS_TO_LONGS(katom->nr_extres),
 					sizeof(unsigned long), GFP_KERNEL);
 		if (!info.dma_fence_excl_bitmap) {
+<<<<<<< HEAD
 			err = -ENOMEM;
 			goto failed_input_copy;
+=======
+			err_ret_val = -ENOMEM;
+			goto early_err_out;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 	}
 #endif /* CONFIG_MALI_DMA_FENCE */
 
+<<<<<<< HEAD
 	if (copy_from_user(input_extres,
 			get_compat_pointer(katom->kctx, user_atom->extres_list),
 			sizeof(*input_extres) * katom->nr_extres) != 0) {
@@ -272,12 +325,15 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 		goto failed_input_copy;
 	}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/* Take the processes mmap lock */
 	down_read(kbase_mem_get_process_mmap_lock());
 
 	/* need to keep the GPU VM locked while we set up UMM buffers */
 	kbase_gpu_vm_lock(katom->kctx);
 	for (res_no = 0; res_no < katom->nr_extres; res_no++) {
+<<<<<<< HEAD
 		struct base_external_resource *user_res = &input_extres[res_no];
 		struct kbase_va_region *reg;
 #ifdef CONFIG_MALI_DMA_FENCE
@@ -290,6 +346,22 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 			katom->kctx, user_res->ext_resource & ~BASE_EXT_RES_ACCESS_EXCLUSIVE);
 		/* did we find a matching region object? */
 		if (unlikely(kbase_is_region_invalid_or_free(reg))) {
+=======
+		struct base_external_resource *res = &input_extres[res_no];
+		struct kbase_va_region *reg;
+		struct kbase_mem_phy_alloc *alloc;
+#ifdef CONFIG_MALI_DMA_FENCE
+		bool exclusive;
+
+		exclusive = (res->ext_resource & BASE_EXT_RES_ACCESS_EXCLUSIVE)
+				? true : false;
+#endif
+		reg = kbase_region_tracker_find_region_enclosing_address(
+				katom->kctx,
+				res->ext_resource & ~BASE_EXT_RES_ACCESS_EXCLUSIVE);
+		/* did we find a matching region object? */
+		if (kbase_is_region_invalid_or_free(reg)) {
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			/* roll back */
 			goto failed_loop;
 		}
@@ -299,9 +371,18 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 			katom->atom_flags |= KBASE_KATOM_FLAG_PROTECTED;
 		}
 
+<<<<<<< HEAD
 		err = kbase_map_external_resource(katom->kctx, reg, current->mm);
 		if (err)
 			goto failed_loop;
+=======
+		alloc = kbase_map_external_resource(katom->kctx, reg,
+				current->mm);
+		if (!alloc) {
+			err_ret_val = -EINVAL;
+			goto failed_loop;
+		}
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #ifdef CONFIG_MALI_DMA_FENCE
 		if (implicit_sync &&
@@ -317,7 +398,19 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 								exclusive);
 		}
 #endif /* CONFIG_MALI_DMA_FENCE */
+<<<<<<< HEAD
 		katom->extres[res_no] = reg;
+=======
+
+		/* finish with updating out array with the data we found */
+		/* NOTE: It is important that this is the last thing we do (or
+		 * at least not before the first write) as we overwrite elements
+		 * as we loop and could be overwriting ourself, so no writes
+		 * until the last read for an element.
+		 */
+		katom->extres[res_no].gpu_address = reg->start_pfn << PAGE_SHIFT; /* save the start_pfn (as an address, not pfn) to use fast lookup later */
+		katom->extres[res_no].alloc = alloc;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 	/* successfully parsed the extres array */
 	/* drop the vm lock now */
@@ -340,13 +433,20 @@ static int kbase_jd_pre_external_resources(struct kbase_jd_atom *katom, const st
 		kfree(info.dma_fence_excl_bitmap);
 	}
 #endif /* CONFIG_MALI_DMA_FENCE */
+<<<<<<< HEAD
 	/* Free the buffer holding data from userspace */
 	kfree(input_extres);
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	/* all done OK */
 	return 0;
 
 /* error handling section */
+<<<<<<< HEAD
+=======
+
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #ifdef CONFIG_MALI_DMA_FENCE
 failed_dma_fence_setup:
 	/* Lock the processes mmap lock */
@@ -356,6 +456,7 @@ failed_dma_fence_setup:
 	kbase_gpu_vm_lock(katom->kctx);
 #endif
 
+<<<<<<< HEAD
 failed_loop:
 	/* undo the loop work. We are guaranteed to have access to the VA region
 	 * as we hold a reference to it until it's unmapped
@@ -364,15 +465,27 @@ failed_loop:
 		struct kbase_va_region *reg = katom->extres[res_no];
 
 		kbase_unmap_external_resource(katom->kctx, reg);
+=======
+ failed_loop:
+	/* undo the loop work */
+	while (res_no-- > 0) {
+		struct kbase_mem_phy_alloc *alloc = katom->extres[res_no].alloc;
+
+		kbase_unmap_external_resource(katom->kctx, NULL, alloc);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 	kbase_gpu_vm_unlock(katom->kctx);
 
 	/* Release the processes mmap lock */
 	up_read(kbase_mem_get_process_mmap_lock());
 
+<<<<<<< HEAD
 failed_input_copy:
 	kfree(input_extres);
 failed_input_alloc:
+=======
+ early_err_out:
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	kfree(katom->extres);
 	katom->extres = NULL;
 #ifdef CONFIG_MALI_DMA_FENCE
@@ -381,7 +494,11 @@ failed_input_alloc:
 		kfree(info.dma_fence_excl_bitmap);
 	}
 #endif
+<<<<<<< HEAD
 	return err;
+=======
+	return err_ret_val;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 static inline void jd_resolve_dep(struct list_head *out_list,
@@ -685,6 +802,7 @@ static void jd_update_jit_usage(struct kbase_jd_atom *katom)
 }
 #endif /* MALI_JIT_PRESSURE_LIMIT_BASE */
 
+<<<<<<< HEAD
 /*
  * jd_mark_simple_gfx_frame_atoms() - Identify and mark "simple" graphics frame
  *
@@ -778,6 +896,8 @@ static void jd_mark_simple_gfx_frame_atoms(struct kbase_jd_atom *katom)
  *
  * The caller must hold the kbase_jd_context.lock.
  */
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 bool kbase_jd_done_nolock(struct kbase_jd_atom *katom, bool post_immediately)
 {
 	struct kbase_context *kctx = katom->kctx;
@@ -834,6 +954,7 @@ bool kbase_jd_done_nolock(struct kbase_jd_atom *katom, bool post_immediately)
 			list_del(runnable_jobs.next);
 			node->in_jd_list = false;
 
+<<<<<<< HEAD
 			if (node->atom_flags &
 			    KBASE_KATOM_FLAG_SIMPLE_FRAME_FRAGMENT) {
 				dev_dbg(kctx->kbdev->dev,
@@ -857,6 +978,8 @@ bool kbase_jd_done_nolock(struct kbase_jd_atom *katom, bool post_immediately)
 				}
 			}
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 			dev_dbg(kctx->kbdev->dev, "List node %pK has status %d\n",
 				node, node->status);
 
@@ -1274,8 +1397,11 @@ static bool jd_submit_atom(struct kbase_context *const kctx,
 		}
 	}
 
+<<<<<<< HEAD
 	jd_mark_simple_gfx_frame_atoms(katom);
 
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #if IS_ENABLED(CONFIG_GPU_TRACEPOINTS)
 	katom->work_id = atomic_inc_return(&jctx->work_id);
 	trace_gpu_job_enqueue(kctx->id, katom->work_id,
@@ -1434,7 +1560,11 @@ int kbase_jd_submit(struct kbase_context *kctx,
 
 		user_addr = (void __user *)((uintptr_t) user_addr + stride);
 
+<<<<<<< HEAD
 		rt_mutex_lock(&jctx->lock);
+=======
+		mutex_lock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 #ifndef compiletime_assert
 #define compiletime_assert_defined
 #define compiletime_assert(x, msg) do { switch (0) { case 0: case (x):; } } \
@@ -1459,7 +1589,11 @@ while (false)
 			/* Atom number is already in use, wait for the atom to
 			 * complete
 			 */
+<<<<<<< HEAD
 			rt_mutex_unlock(&jctx->lock);
+=======
+			mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 			/* This thread will wait for the atom to complete. Due
 			 * to thread scheduling we are not sure that the other
@@ -1478,7 +1612,11 @@ while (false)
 				 */
 				return 0;
 			}
+<<<<<<< HEAD
 			rt_mutex_lock(&jctx->lock);
+=======
+			mutex_lock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		}
 		KBASE_TLSTREAM_TL_JD_SUBMIT_ATOM_START(kbdev, katom);
 		need_to_try_schedule_context |= jd_submit_atom(kctx, &user_atom,
@@ -1489,7 +1627,11 @@ while (false)
 		 */
 		kbase_disjoint_event_potential(kbdev);
 
+<<<<<<< HEAD
 		rt_mutex_unlock(&jctx->lock);
+=======
+		mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	if (need_to_try_schedule_context)
@@ -1500,7 +1642,11 @@ while (false)
 
 KBASE_EXPORT_TEST_API(kbase_jd_submit);
 
+<<<<<<< HEAD
 void kbase_jd_done_worker(struct kthread_work *data)
+=======
+void kbase_jd_done_worker(struct work_struct *data)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_jd_atom *katom = container_of(data, struct kbase_jd_atom, work);
 	struct kbase_jd_context *jctx;
@@ -1532,10 +1678,17 @@ void kbase_jd_done_worker(struct kthread_work *data)
 	/*
 	 * Begin transaction on JD context and JS context
 	 */
+<<<<<<< HEAD
 	rt_mutex_lock(&jctx->lock);
 	KBASE_TLSTREAM_TL_ATTRIB_ATOM_STATE(kbdev, katom, TL_ATOM_STATE_DONE);
 	rt_mutex_lock(&js_devdata->queue_mutex);
 	rt_mutex_lock(&js_kctx_info->ctx.jsctx_mutex);
+=======
+	mutex_lock(&jctx->lock);
+	KBASE_TLSTREAM_TL_ATTRIB_ATOM_STATE(kbdev, katom, TL_ATOM_STATE_DONE);
+	mutex_lock(&js_devdata->queue_mutex);
+	mutex_lock(&js_kctx_info->ctx.jsctx_mutex);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	/* This worker only gets called on contexts that are scheduled *in*. This is
 	 * because it only happens in response to an IRQ from a job that was
@@ -1548,8 +1701,13 @@ void kbase_jd_done_worker(struct kthread_work *data)
 
 		dev_dbg(kbdev->dev, "Atom %pK has been promoted to stopped\n",
 			(void *)katom);
+<<<<<<< HEAD
 		rt_mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
 		rt_mutex_unlock(&js_devdata->queue_mutex);
+=======
+		mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
+		mutex_unlock(&js_devdata->queue_mutex);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 		spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
 
@@ -1559,7 +1717,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
 		kbase_js_unpull(kctx, katom);
 
 		spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
+<<<<<<< HEAD
 		rt_mutex_unlock(&jctx->lock);
+=======
+		mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 		return;
 	}
@@ -1579,8 +1741,13 @@ void kbase_jd_done_worker(struct kthread_work *data)
 	KBASE_DEBUG_ASSERT(kbasep_js_has_atom_finished(&katom_retained_state));
 
 	kbasep_js_remove_job(kbdev, kctx, katom);
+<<<<<<< HEAD
 	rt_mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
 	rt_mutex_unlock(&js_devdata->queue_mutex);
+=======
+	mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
+	mutex_unlock(&js_devdata->queue_mutex);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	/* kbase_jd_done_nolock() requires the jsctx_mutex lock to be dropped */
 	kbase_jd_done_nolock(katom, false);
 
@@ -1590,7 +1757,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
 		unsigned long flags;
 
 		context_idle = false;
+<<<<<<< HEAD
 		rt_mutex_lock(&js_devdata->queue_mutex);
+=======
+		mutex_lock(&js_devdata->queue_mutex);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		spin_lock_irqsave(&kbdev->hwaccess_lock, flags);
 
 		/* If kbase_sched() has scheduled this context back in then
@@ -1630,13 +1801,21 @@ void kbase_jd_done_worker(struct kthread_work *data)
 			kbase_ctx_flag_set(kctx, KCTX_ACTIVE);
 		}
 		spin_unlock_irqrestore(&kbdev->hwaccess_lock, flags);
+<<<<<<< HEAD
 		rt_mutex_unlock(&js_devdata->queue_mutex);
+=======
+		mutex_unlock(&js_devdata->queue_mutex);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	/*
 	 * Transaction complete
 	 */
+<<<<<<< HEAD
 	rt_mutex_unlock(&jctx->lock);
+=======
+	mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	/* Job is now no longer running, so can now safely release the context
 	 * reference, and handle any actions that were logged against the
@@ -1651,7 +1830,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
 		/* If worker now idle then post all events that kbase_jd_done_nolock()
 		 * has queued
 		 */
+<<<<<<< HEAD
 		rt_mutex_lock(&jctx->lock);
+=======
+		mutex_lock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		while (!list_empty(&kctx->completed_jobs)) {
 			struct kbase_jd_atom *atom = list_entry(
 					kctx->completed_jobs.next,
@@ -1660,7 +1843,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
 
 			kbase_event_post(kctx, atom);
 		}
+<<<<<<< HEAD
 		rt_mutex_unlock(&jctx->lock);
+=======
+		mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	}
 
 	kbase_backend_complete_wq_post_sched(kbdev, core_req);
@@ -1676,7 +1863,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
 
 /**
  * jd_cancel_worker - Work queue job cancel function.
+<<<<<<< HEAD
  * @data: a &struct kthread_work
+=======
+ * @data: a &struct work_struct
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
  *
  * Only called as part of 'Zapping' a context (which occurs on termination).
  * Operates serially with the kbase_jd_done_worker() on the work queue.
@@ -1688,7 +1879,11 @@ void kbase_jd_done_worker(struct kthread_work *data)
  * running (by virtue of only being called on contexts that aren't
  * scheduled).
  */
+<<<<<<< HEAD
 static void jd_cancel_worker(struct kthread_work *data)
+=======
+static void jd_cancel_worker(struct work_struct *data)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 {
 	struct kbase_jd_atom *katom = container_of(data, struct kbase_jd_atom, work);
 	struct kbase_jd_context *jctx;
@@ -1716,11 +1911,19 @@ static void jd_cancel_worker(struct kthread_work *data)
 	KBASE_DEBUG_ASSERT(!kbase_ctx_flag(kctx, KCTX_SCHEDULED));
 
 	/* Scheduler: Remove the job from the system */
+<<<<<<< HEAD
 	rt_mutex_lock(&js_kctx_info->ctx.jsctx_mutex);
 	attr_state_changed = kbasep_js_remove_cancelled_job(kbdev, kctx, katom);
 	rt_mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
 
 	rt_mutex_lock(&jctx->lock);
+=======
+	mutex_lock(&js_kctx_info->ctx.jsctx_mutex);
+	attr_state_changed = kbasep_js_remove_cancelled_job(kbdev, kctx, katom);
+	mutex_unlock(&js_kctx_info->ctx.jsctx_mutex);
+
+	mutex_lock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	need_to_try_schedule_context = kbase_jd_done_nolock(katom, true);
 	/* Because we're zapping, we're not adding any more jobs to this ctx, so no need to
@@ -1728,10 +1931,16 @@ static void jd_cancel_worker(struct kthread_work *data)
 	 * around this too.
 	 */
 	KBASE_DEBUG_ASSERT(!need_to_try_schedule_context);
+<<<<<<< HEAD
 	CSTD_UNUSED(need_to_try_schedule_context);
 
 	/* katom may have been freed now, do not use! */
 	rt_mutex_unlock(&jctx->lock);
+=======
+
+	/* katom may have been freed now, do not use! */
+	mutex_unlock(&jctx->lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	if (attr_state_changed)
 		kbase_js_sched_all(kbdev);
@@ -1787,10 +1996,16 @@ void kbase_jd_done(struct kbase_jd_atom *katom, int slot_nr,
 		return;
 #endif
 
+<<<<<<< HEAD
 	/* At this point no work should be pending on katom->work */
 
 	kthread_init_work(&katom->work, kbase_jd_done_worker);
 	kthread_queue_work(&kbdev->job_done_worker, &katom->work);
+=======
+	WARN_ON(work_pending(&katom->work));
+	INIT_WORK(&katom->work, kbase_jd_done_worker);
+	queue_work(kctx->jctx.job_done_wq, &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 KBASE_EXPORT_TEST_API(kbase_jd_done);
@@ -1810,12 +2025,21 @@ void kbase_jd_cancel(struct kbase_device *kbdev, struct kbase_jd_atom *katom)
 	/* This should only be done from a context that is not scheduled */
 	KBASE_DEBUG_ASSERT(!kbase_ctx_flag(kctx, KCTX_SCHEDULED));
 
+<<<<<<< HEAD
 	/* At this point no work should be pending on katom->work */
 
 	katom->event_code = BASE_JD_EVENT_JOB_CANCELLED;
 
 	kthread_init_work(&katom->work, jd_cancel_worker);
 	kthread_queue_work(&kctx->kbdev->job_done_worker, &katom->work);
+=======
+	WARN_ON(work_pending(&katom->work));
+
+	katom->event_code = BASE_JD_EVENT_JOB_CANCELLED;
+
+	INIT_WORK(&katom->work, jd_cancel_worker);
+	queue_work(kctx->jctx.job_done_wq, &katom->work);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 
@@ -1833,7 +2057,11 @@ void kbase_jd_zap_context(struct kbase_context *kctx)
 
 	kbase_js_zap_context(kctx);
 
+<<<<<<< HEAD
 	rt_mutex_lock(&kctx->jctx.lock);
+=======
+	mutex_lock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	/*
 	 * While holding the struct kbase_jd_context lock clean up jobs which are known to kbase but are
@@ -1851,7 +2079,11 @@ void kbase_jd_zap_context(struct kbase_context *kctx)
 	kbase_dma_fence_cancel_all_atoms(kctx);
 #endif
 
+<<<<<<< HEAD
 	rt_mutex_unlock(&kctx->jctx.lock);
+=======
+	mutex_unlock(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 #ifdef CONFIG_MALI_DMA_FENCE
 	/* Flush dma-fence workqueue to ensure that any callbacks that may have
@@ -1872,12 +2104,26 @@ KBASE_EXPORT_TEST_API(kbase_jd_zap_context);
 int kbase_jd_init(struct kbase_context *kctx)
 {
 	int i;
+<<<<<<< HEAD
+=======
+	int mali_err = 0;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	struct priority_control_manager_device *pcm_device = NULL;
 
 	KBASE_DEBUG_ASSERT(kctx);
 	pcm_device = kctx->kbdev->pcm_dev;
 	kctx->jctx.max_priority = KBASE_JS_ATOM_SCHED_PRIO_REALTIME;
 
+<<<<<<< HEAD
+=======
+	kctx->jctx.job_done_wq = alloc_workqueue("mali_jd",
+			WQ_HIGHPRI | WQ_UNBOUND, 1);
+	if (kctx->jctx.job_done_wq == NULL) {
+		mali_err = -ENOMEM;
+		goto out1;
+	}
+
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 	for (i = 0; i < BASE_JD_ATOM_COUNT; i++) {
 		init_waitqueue_head(&kctx->jctx.atoms[i].completed);
 
@@ -1888,7 +2134,11 @@ int kbase_jd_init(struct kbase_context *kctx)
 		kctx->jctx.atoms[i].event_code = BASE_JD_EVENT_JOB_INVALID;
 		kctx->jctx.atoms[i].status = KBASE_JD_ATOM_STATE_UNUSED;
 
+<<<<<<< HEAD
 #if defined(CONFIG_MALI_DMA_FENCE) || defined(CONFIG_SYNC_FILE)
+=======
+#if defined(CONFIG_MALI_DMA_FENCE) || IS_ENABLED(CONFIG_SYNC_FILE)
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		kctx->jctx.atoms[i].dma_fence.context =
 						dma_fence_context_alloc(1);
 		atomic_set(&kctx->jctx.atoms[i].dma_fence.seqno, 0);
@@ -1899,7 +2149,11 @@ int kbase_jd_init(struct kbase_context *kctx)
 	for (i = 0; i < BASE_JD_RP_COUNT; i++)
 		kctx->jctx.renderpasses[i].state = KBASE_JD_RP_COMPLETE;
 
+<<<<<<< HEAD
 	rt_mutex_init(&kctx->jctx.lock);
+=======
+	mutex_init(&kctx->jctx.lock);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 
 	init_waitqueue_head(&kctx->jctx.zero_jobs_wait);
 
@@ -1915,6 +2169,12 @@ int kbase_jd_init(struct kbase_context *kctx)
 				pcm_device, current, KBASE_JS_ATOM_SCHED_PRIO_REALTIME);
 
 	return 0;
+<<<<<<< HEAD
+=======
+
+ out1:
+	return mali_err;
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 KBASE_EXPORT_TEST_API(kbase_jd_init);
@@ -1923,7 +2183,12 @@ void kbase_jd_exit(struct kbase_context *kctx)
 {
 	KBASE_DEBUG_ASSERT(kctx);
 
+<<<<<<< HEAD
 	kthread_flush_worker(&kctx->kbdev->job_done_worker);
+=======
+	/* Work queue is emptied by this */
+	destroy_workqueue(kctx->jctx.job_done_wq);
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 }
 
 KBASE_EXPORT_TEST_API(kbase_jd_exit);

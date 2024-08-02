@@ -233,14 +233,20 @@ static const enum base_hw_issue *kbase_hw_get_issues_for_new_id(
 		  { { GPU_ID2_VERSION_MAKE(0, 0, 0), base_hw_issues_tTUx_r0p0 },
 		    { GPU_ID2_VERSION_MAKE(1, 0, 0), base_hw_issues_tTUx_r1p0 },
 		    { GPU_ID2_VERSION_MAKE(1, 1, 0), base_hw_issues_tTUx_r1p1 },
+<<<<<<< HEAD
 		    { GPU_ID2_VERSION_MAKE(1, 2, 0), base_hw_issues_tTUx_r1p1 },
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		    { U32_MAX, NULL } } },
 
 		{ GPU_ID2_PRODUCT_LTUX,
 		  { { GPU_ID2_VERSION_MAKE(0, 0, 0), base_hw_issues_tTUx_r0p0 },
 		    { GPU_ID2_VERSION_MAKE(1, 0, 0), base_hw_issues_tTUx_r1p0 },
 		    { GPU_ID2_VERSION_MAKE(1, 1, 0), base_hw_issues_tTUx_r1p1 },
+<<<<<<< HEAD
 		    { GPU_ID2_VERSION_MAKE(1, 2, 0), base_hw_issues_tTUx_r1p1 },
+=======
+>>>>>>> 61ae6d64ae61b1d484700e4bc5b8b112abdb8a78
 		    { U32_MAX, NULL } } },
 
 	};

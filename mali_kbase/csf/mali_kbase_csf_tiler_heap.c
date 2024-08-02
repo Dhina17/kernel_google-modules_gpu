@@ -565,7 +565,6 @@ int kbase_csf_tiler_heap_context_init(struct kbase_context *const kctx)
 
 	INIT_LIST_HEAD(&kctx->csf.tiler_heaps.list);
 	mutex_init(&kctx->csf.tiler_heaps.lock);
-	atomic_set(&kctx->csf.tiler_heaps.est_count_pages, 0);
 
 	dev_dbg(kctx->kbdev->dev, "Initialized a context for tiler heaps\n");
 
@@ -592,8 +591,6 @@ void kbase_csf_tiler_heap_context_term(struct kbase_context *const kctx)
 
 		delete_heap(heap);
 	}
-
-	WARN_ON(atomic_read(&kctx->csf.tiler_heaps.est_count_pages) != 0);
 
 	mutex_destroy(&kctx->csf.tiler_heaps.lock);
 
@@ -644,10 +641,10 @@ static bool kbasep_is_buffer_descriptor_region_suitable(struct kbase_context *co
 
 #define TILER_BUF_DESC_SIZE (sizeof(struct kbase_csf_gpu_buffer_heap))
 
-int kbase_csf_tiler_heap_init(struct kbase_context *const kctx, u32 const chunk_size,
-			      u32 const initial_chunks, u32 const max_chunks,
-			      u16 const target_in_flight, u64 const buf_desc_va,
-			      u64 *const heap_gpu_va, u64 *const first_chunk_va)
+int kbase_csf_tiler_heap_init(struct kbase_context *const kctx,
+	u32 const chunk_size, u32 const initial_chunks, u32 const max_chunks,
+	u16 const target_in_flight, u64 *const heap_gpu_va,
+	u64 *const first_chunk_va)
 {
 	int err = 0;
 	struct kbase_csf_tiler_heap *heap = NULL;
@@ -657,9 +654,10 @@ int kbase_csf_tiler_heap_init(struct kbase_context *const kctx, u32 const chunk_
 	struct kbase_va_region *gpu_va_reg = NULL;
 	void *vmap_ptr = NULL;
 
+
 	dev_dbg(kctx->kbdev->dev,
-		"Creating a tiler heap with %u chunks (limit: %u) of size %u, buf_desc_va: 0x%llx\n",
-		initial_chunks, max_chunks, chunk_size, buf_desc_va);
+		"Creating a tiler heap with %u chunks (limit: %u) of size %u\n",
+		initial_chunks, max_chunks, chunk_size);
 
 	if (!kbase_mem_allow_alloc(kctx))
 		return -EINVAL;
@@ -681,7 +679,8 @@ int kbase_csf_tiler_heap_init(struct kbase_context *const kctx, u32 const chunk_
 
 	heap = kzalloc(sizeof(*heap), GFP_KERNEL);
 	if (unlikely(!heap)) {
-		dev_err(kctx->kbdev->dev, "No kernel memory for a new tiler heap");
+		dev_err(kctx->kbdev->dev,
+			"No kernel memory for a new tiler heap\n");
 		return -ENOMEM;
 	}
 
@@ -837,6 +836,7 @@ int kbase_csf_tiler_heap_term(struct kbase_context *const kctx,
 	/* Update stats whilst still holding the lock so they are in sync with the tiler_heaps.list
 	 * at all times
 	 */
+	mutex_unlock(&kctx->csf.tiler_heaps.lock);
 	if (likely(kctx->running_total_tiler_heap_memory >= heap_size))
 		kctx->running_total_tiler_heap_memory -= heap_size;
 	else
@@ -847,12 +847,6 @@ int kbase_csf_tiler_heap_term(struct kbase_context *const kctx,
 	else
 		dev_warn(kctx->kbdev->dev,
 			 "Running total tiler chunk count lower than expected!");
-	if (!err)
-		dev_dbg(kctx->kbdev->dev,
-			"Terminated tiler heap 0x%llX, buffer descriptor 0x%llX, ctx_%d_%d\n",
-			heap->gpu_va, heap->buf_desc_va, kctx->tgid, kctx->id);
-	mutex_unlock(&kctx->csf.tiler_heaps.lock);
-
 	/* Deletion requires the kctx->reg_lock, so must only operate on it whilst unlinked from
 	 * the kctx's csf.tiler_heaps.list, and without holding the csf.tiler_heaps.lock
 	 */
